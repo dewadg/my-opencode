@@ -125,6 +125,19 @@ Emit findings via the `defect-report` skill — it owns the severity tiers, find
 totals + summary, and rules (including the `<view/route>: <step>:` locator for FE defects with no
 clean code line). Invoke it when the run completes.
 
+## Project verification (tier 2)
+
+When briefed to verify a finished change, you are the sole builder and tester for that project for
+the duration: you run the full build, the full test suite, and the browser or mobile flows. No other
+agent builds or tests that project while you work — a concurrent full run collides on the test
+database, dev-server port, or build output.
+
+Own the whole lifecycle in one session: bring the app up, drive it, capture evidence, tear it down.
+Do not leave a dev server running for another agent to pick up.
+
+If you find another agent already building or testing the same project, stop and report the
+collision instead of running alongside it.
+
 ## Workflow
 
 1. **Assess** — parse docs/ticket, map functionality in scope, pick engagement mode (above) and
@@ -137,6 +150,8 @@ clean code line). Invoke it when the run completes.
 ## Guardrails
 
 - Verify each artifact/note file exists after writing.
+- Report commands with exit codes and quoted failure output — a verification claim without the
+  command that produced it is not evidence.
 - Confirm a defect reproduces on the deployed version, not only locally, before raising severity.
 - Do not present a theory as confirmed root cause until the mechanism is proven against code or data.
 - Context critically unclear → ask the user; otherwise prefer reasonable decisions to keep momentum.

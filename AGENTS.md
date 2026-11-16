@@ -4,7 +4,7 @@ Guidance for OpenCode (V2) when working in this repository.
 
 ## What this repository is
 
-A personal collection of OpenCode **configuration artifacts** — subagent definitions, skills, slash
+A personal collection of OpenCode **configuration artifacts** — agent definitions, skills, slash
 commands, and an MCP server config example. It is not an application: there is nothing to build,
 lint, or test, and no package manager. The "code" here is markdown that OpenCode itself consumes.
 
@@ -23,7 +23,8 @@ curated subset, not a mirror.
 
 ## Layout
 
-- `.opencode/agents/*.md` — one subagent per file. Frontmatter + system prompt.
+- `.opencode/agents/*.md` — one agent per file. Frontmatter + system prompt. Every agent is a
+  subagent except `coordinator.md`, the primary the orchestrators run in.
 - `.opencode/commands/*.md` — one user-invoked slash command per file. Frontmatter (`description`,
   optional `agent`, `model`, `subagent`) + prompt body. `$ARGUMENTS` expands to the text after the
   command name, `$1`/`$2` to positional arguments, and `` !`shell` `` injects command output. The
@@ -130,9 +131,22 @@ still depend on `note-write`/`note-search` for file mechanics). They deliberatel
 an agent roster — they route by capability ("a service backend → the engineering agent for that
 language") so that adding an agent to `.opencode/agents/` makes it usable without editing any command
 or skill. Preserve that indirection; do not introduce agent-name lists into commands or skills.
+All three run under `coordinator` (set by `agent:` frontmatter on the commands, and by
+`default_agent` in `opencode.json`), which is why the delegation contract below binds them.
 `analyze` and `investigate` also share a code-flow contract: when they explain how code flows, they
 render it with the `call-graph` skill (indented arrow tree), never prose — so changes to the
 `call-graph` output format affect what those commands emit.
+
+**Coordination.** `coordinator.md` is the primary that does not build: it plans, briefs, and verifies
+returned reports. Its role is prompt-enforced, not permission-enforced — it keeps `edit`, `shell`,
+and the browser MCP tools, so nothing structurally stops it from taking a subagent's work; what
+binds it is the evidence-attribution rule (every claim cites a subagent `sessionID`) and the
+`code` skill's two-tier verification contract. Verification splits in two: the implementing subagent
+self-checks with a narrow build/lint/unit run for the packages it touched, then the QA agent runs the
+full project build, full suite, and browser/mobile flows **once**, per project, after all
+implementation is in. One full run per project at a time — concurrent full builds collide on the test
+database, dev-server port, and build output. If `qa-eng`'s tier-2 section, the `code` skill's
+Verifying section, or `coordinator.md`'s clauses change, change the other two with them.
 
 **Breakdown.** The `breakdown` skill orchestrates in the main thread (it must — it spawns
 `code-diver`, and subagents cannot spawn subagents): requirements `R1…Rn` → `business-impact` skill →

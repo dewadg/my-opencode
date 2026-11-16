@@ -1,5 +1,6 @@
 ---
 description: Spec out a change end-to-end into a build-ready specs/{slug}.md before any code — research (fan out investigator subagents when the scope earns it), commit to decisions, then load the spec-write skill to format the file.
+agent: coordinator
 ---
 
 # /spec
