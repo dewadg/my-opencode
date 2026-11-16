@@ -1,4 +1,4 @@
-# my-open-code
+# my-opencode
 
 My collection of OpenCode (V2) subagents, skills, commands, and MCP server config.
 
