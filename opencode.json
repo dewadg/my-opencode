@@ -1,5 +1,46 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "model": "deepseek/deepseek-flash#high",
-  "default_agent": "coordinator"
+  "default_agent": "coordinator",
+  "agents": {
+    "code-diver": {
+      "model": "deepseek/deepseek-flash#low"
+    },
+    "golang-eng": {
+      "model": "deepseek/deepseek-flash#low"
+    },
+    "js-eng": {
+      "model": "deepseek/deepseek-flash#low"
+    },
+    "react-eng": {
+      "model": "deepseek/deepseek-flash#low"
+    },
+    "vue-eng": {
+      "model": "deepseek/deepseek-flash#low"
+    },
+    "docker-eng": {
+      "model": "deepseek/deepseek-flash#low"
+    },
+    "qa-eng": {
+      "model": "deepseek/deepseek-flash#low"
+    },
+    "api-documenter": {
+      "model": "deepseek/deepseek-flash#low"
+    },
+    "code-reviewer": {
+      "model": "deepseek/deepseek-flash#high"
+    },
+    "architect-reviewer": {
+      "model": "deepseek/deepseek-flash#high"
+    },
+    "security-auditor": {
+      "model": "deepseek/deepseek-flash#high"
+    },
+    "compliance-auditor": {
+      "model": "deepseek/deepseek-flash#high"
+    },
+    "db-admin": {
+      "model": "deepseek/deepseek-flash#high"
+    }
+  }
 }

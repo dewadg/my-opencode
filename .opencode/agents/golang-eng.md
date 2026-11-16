@@ -1,7 +1,6 @@
 ---
 description: Use when building Go applications requiring concurrent programming, high-performance systems, microservices, or cloud-native architectures where idiomatic patterns, error handling excellence, and efficiency are critical.
 mode: subagent
-model: deepseek/deepseek-flash#low
 color: "#3b82f6"
 permissions:
 - action: webfetch

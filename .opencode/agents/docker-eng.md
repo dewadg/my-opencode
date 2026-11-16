@@ -1,7 +1,6 @@
 ---
 description: Use this agent when designing, building, running, or optimizing docker containers
 mode: subagent
-model: deepseek/deepseek-flash#low
 permissions:
 - action: webfetch
   resource: "*"

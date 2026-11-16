@@ -32,7 +32,8 @@ curated subset, not a mirror.
 - `.opencode/skills/<name>/SKILL.md` — one skill per directory. The directory name is the skill ID.
   Supporting scripts and references live alongside (e.g.
   `.opencode/skills/telegram-notify/scripts/send_telegram.sh`).
-- `opencode.json` — project config (schema only; MCP servers stay opt-in).
+- `opencode.json` — project config: schema, the session default `model`, and the `agents` block that
+  pins every subagent's model (MCP servers stay opt-in).
 - `opencode.example.json` — example `mcp.servers` block (`context7`, `gitlab`, `goland`,
   `chrome-devtools`, `figma`, `mobile-device`); merge it into a project's or the global
   `~/.config/opencode/opencode.json`. Secrets are `{env:VAR}` references, never literals. `goland`
@@ -45,7 +46,7 @@ curated subset, not a mirror.
 description: >                 # third person, trigger-oriented; this is what routes work here
   Use this agent when ...
 mode: subagent                 # subagent | primary | all
-model: provider/model#variant  # optional; omit to inherit the parent session model
+model: provider/model#variant  # leave out — subagent models are pinned in opencode.json's agents block
 color: "#3b82f6"               # optional six-digit hex
 permissions:                   # ordered rules; last match wins
   - action: edit
@@ -63,6 +64,13 @@ OpenCode names the agent from the filename stem. V2 has no agent fields for `too
 `skill`, `question`, `execute`, or an MCP `<server>_<tool>` name). MCP servers are configured
 globally under `mcp.servers`; per-agent server selection is not supported. Skills are advertised to
 every agent; a skill's instructions can say which agent is expected to use it.
+
+Subagent models are pinned centrally, not per file: every agent here omits `model` from its frontmatter
+and takes one from the `agents` block in `opencode.json` (`#low` for explorers and language engineers,
+`#high` for reviewers and auditors). Switch every subagent's model by editing that one file —
+OpenCode reloads config on save. When copying agents into `~/.config/opencode/agents/`, merge the same
+`agents` block into `~/.config/opencode/opencode.json`, or the copied agents inherit the parent session
+model instead.
 
 Body convention across agents: a role paragraph, a "When invoked" list, then phased workflow
 sections. Follow the shape of an existing agent when adding a new one.

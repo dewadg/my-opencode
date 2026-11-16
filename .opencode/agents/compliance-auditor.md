@@ -1,7 +1,6 @@
 ---
 description: Use when the user needs to understand GDPR or CCPA compliance, review data practices, or assess privacy requirements.
 mode: subagent
-model: deepseek/deepseek-flash#high
 permissions:
 - action: edit
   resource: "*"

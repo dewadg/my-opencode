@@ -1,7 +1,6 @@
 ---
 description: Use this agent when you need to build, optimize, or refactor modern JavaScript code for browser, Node.js, Bun, or full-stack applications requiring ES2023+ features, async patterns, or performance-critical implementations.
 mode: subagent
-model: deepseek/deepseek-flash#low
 color: "#eab308"
 permissions:
 - action: webfetch

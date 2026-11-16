@@ -1,7 +1,6 @@
 ---
 description: Use when optimizing existing React applications for performance, implementing advanced React 18+ features, or solving complex state management and architectural challenges within React codebases.
 mode: subagent
-model: deepseek/deepseek-flash#low
 color: "#06b6d4"
 permissions:
 - action: subagent

@@ -1,7 +1,6 @@
 ---
 description: Use this agent when you need to evaluate system design decisions, architectural patterns, and technology choices at the macro level.
 mode: subagent
-model: deepseek/deepseek-flash#high
 permissions:
 - action: webfetch
   resource: "*"

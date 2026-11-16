@@ -1,7 +1,6 @@
 ---
 description: Use this agent when building Vue 3 applications that require Composition API mastery, reactivity optimization, or Nuxt 3 development with enterprise-scale performance concerns.
 mode: subagent
-model: deepseek/deepseek-flash#low
 color: "#22c55e"
 permissions:
 - action: webfetch
