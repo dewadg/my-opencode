@@ -1,0 +1,4 @@
+# Store every text file as LF in the repository, independent of core.autocrlf.
+# core.autocrlf=true is set globally on this machine; this attribute overrides it
+# so the index and the checkout agree and no file flips line endings on the next touch.
+* text=auto eol=lf
