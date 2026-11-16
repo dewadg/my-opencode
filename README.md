@@ -1,26 +1,29 @@
-# my-claude-code
+# my-open-code
 
-My collection of Claude Code subagents, skills, commands, and MCP server config.
+My collection of OpenCode (V2) subagents, skills, commands, and MCP server config.
 
-Nothing here is an application — it's markdown that Claude Code itself consumes. Copy what you want
-into `~/.claude/`.
+Nothing here is an application — it's markdown that OpenCode itself consumes. The `.opencode/`
+tree is live project config, so this repo works as-is when opened in OpenCode. Copy what you want
+into `~/.config/opencode/` to use it everywhere.
 
 ## Install
 
 ```bash
-cp agents/*.md ~/.claude/agents/
-cp -R skills/* ~/.claude/skills/
-cp commands/*.md ~/.claude/commands/
+mkdir -p ~/.config/opencode/{agents,commands,skills}
+cp -R .opencode/agents/*   ~/.config/opencode/agents/
+cp -R .opencode/commands/* ~/.config/opencode/commands/
+cp -R .opencode/skills/*   ~/.config/opencode/skills/
 ```
 
-`.mcp.example.json` is a sample project-scoped MCP config; copy it into a project as `.mcp.json`
-(or merge into `~/.claude.json`) and export the env vars it references: `CONTEXT7_API_KEY`,
-`GITLAB_PAT`, `FIGMA_API_KEY`.
+`opencode.example.json` is a sample MCP config; merge its `mcp.servers` block into a project's
+`opencode.json` or the global `~/.config/opencode/opencode.json`, then export the env vars it
+references: `CONTEXT7_API_KEY`, `GITLAB_PAT`, `FIGMA_API_KEY`. Secrets are `{env:VAR}` references,
+never literals. The repo's own `opencode.json` contains only the schema so MCP servers stay opt-in.
 
 ## Agents
 
-Subagents Claude delegates to. Each file is frontmatter (name, description, tools, model, allowed
-skills, MCP servers) plus a system prompt.
+Subagents OpenCode delegates to via the `subagent` tool. Each file is frontmatter (description,
+mode, permissions, optional model/color) plus a system prompt. The filename is the agent ID.
 
 | Agent | Use for |
 |---|---|
@@ -38,6 +41,20 @@ skills, MCP servers) plus a system prompt.
 | `security-auditor` | Security audits, vulnerability analysis, compliance gaps |
 | `vue-eng` | Vue 3 Composition API, reactivity, Nuxt 3 |
 
+Claude Code's `tools:`, `skills:`, `mcpServers:`, and `model: sonnet|opus|haiku` fields have no V2
+equivalent. Tool access is expressed as `permissions` (for example, `code-diver` denies `edit`);
+models are inherited from the parent session unless you set `model: provider/model#variant` on an
+agent or override it in `opencode.json`; MCP servers are configured globally, not per agent.
+
+Current model mapping — Flash only, effort as the dial:
+
+| Tier | Model | Agents |
+|---|---|---|
+| Main / important | `deepseek/deepseek-flash#high` | `architect-reviewer`, `code-reviewer`, `compliance-auditor`, `db-admin`, `security-auditor` |
+| Common | `deepseek/deepseek-flash#low` | `api-documenter`, `code-diver`, `docker-eng`, `golang-eng`, `js-eng`, `qa-eng`, `react-eng`, `vue-eng` |
+
+The default primary model is `deepseek/deepseek-flash#high` in `opencode.json`.
+
 These agents are from [awesome-claude-code-subagents](https://github.com/VoltAgent/awesome-claude-code-subagents) and modified for my personal use.
 
 ## Commands
@@ -46,12 +63,14 @@ User-invoked slash commands. Run as `/analyze`, `/investigate`, `/spec`.
 
 | Command | Use for | Not for |
 |---|---|---|
-| `analyze` | Scoping a feature or change across projects before building it | Diagnosing a bug (`/investigate`); writing the code (`/code`) |
-| `investigate` | Finding the root cause of something broken | Scoping a new feature (`/analyze`); writing the fix (`/code`) |
-| `spec` | Spec out a change end-to-end into a build-ready `specs/{slug}.md` — orchestrates research + decisions, delegates the file format to the `spec-write` skill | Implementing decided work (`/code`); open-ended impact analysis (`/analyze`) |
+| `analyze` | Scoping a feature or change across projects before building it | Diagnosing a bug (`/investigate`); writing the code (`code` skill) |
+| `investigate` | Finding the root cause of something broken | Scoping a new feature (`/analyze`); writing the fix (`code` skill) |
+| `spec` | Spec out a change end-to-end into a build-ready `specs/{slug}.md` — orchestrates research + decisions, delegates the file format to the `spec-write` skill | Implementing decided work (`code` skill); open-ended impact analysis (`/analyze`) |
 
 All three delegate code reading to `code-diver` and, when explaining code flow, render it with the
-`call-graph` skill (indented arrow tree, one node per call hop) rather than prose.
+`call-graph` skill (indented arrow tree, one node per call hop) rather than prose. Commands run in
+the current session unless their frontmatter sets `subagent: true`; all three keep orchestration in
+the main thread because OpenCode subagents cannot spawn other subagents.
 
 ## Skills
 
@@ -59,20 +78,21 @@ All three delegate code reading to `code-diver` and, when explaining code flow, 
 
 | Skill | Use for | Not for |
 |---|---|---|
-| `spec-write` | The spec file FORMAT — frontmatter schema, section template, lean principles, search recipes; auto-fires on spec-writing intent, also driven by the `/spec` command | Implementing decided work (`/code`); diagnosing a bug (`/investigate`); archiving a done spec (`spec-archive`) |
-| `spec-archive` | Move a shipped or abandoned spec to `specs/archives/` after finalizing its status — triggered by "archive the spec", "/spec archive", or any shelving intent | Writing/formatting a spec (`spec-write`); implementing the todo (`/code`) |
+| `spec-write` | The spec file FORMAT — frontmatter schema, section template, lean principles, search recipes; auto-fires on spec-writing intent, also driven by the `/spec` command | Implementing decided work (`code` skill); diagnosing a bug (`/investigate`); archiving a done spec (`spec-archive`) |
+| `spec-archive` | Move a shipped or abandoned spec to `specs/archives/` after finalizing its status — triggered by "archive the spec", "/spec archive", or any shelving intent | Writing/formatting a spec (`spec-write`); implementing the todo (`code` skill) |
 
 ### Orchestrators
 
 `analyze` and `investigate` (commands, above) and `code` (skill, below) share one shape: plan the
-work as tasks, delegate every project-level unit to a subagent, compile the result into a note. They
-route to agents by capability rather than by name, so adding an agent to `agents/` makes it usable
-without touching the command or skill. `spec` (command, above) shares the same delegation shape but
-compiles into a spec file via the `spec-write` skill rather than a note. For code reading and tracing
-they spawn `code-diver` by default, escalating to a language specialist only when `code-diver` flags a
-stack-semantic gap (`→ needs <specialist>`) — `smart-skip` sends semantic-flavored requests straight
-to the specialist, `pass-tree` hands `code-diver`'s output to it so the specialist does only the
-semantic step.
+work as a checklist, delegate every project-level unit to a subagent via the `subagent` tool,
+compile the result into a note. They route to agents by capability rather than by name, so adding
+an agent to `.opencode/agents/` makes it usable without touching the command or skill. `spec`
+(command, above) shares the same delegation shape but compiles into a spec file via the
+`spec-write` skill rather than a note. For code reading and tracing they spawn `code-diver` by
+default, escalating to a language specialist only when `code-diver` flags a stack-semantic gap
+(`→ needs <specialist>`) — `smart-skip` sends semantic-flavored requests straight to the
+specialist, `pass-tree` hands `code-diver`'s output to it so the specialist does only the semantic
+step.
 
 ### Code reading
 
@@ -91,7 +111,7 @@ semantic step.
 | `note-write` | Persist knowledge as a dated, tagged markdown note |
 | `note-search` | Retrieve past notes by project, topic, ticket, or date |
 
-Notes live in `.notes/` (or wherever the project's `CLAUDE.md` says), named
+Notes live in `.notes/` (or wherever the project's `AGENTS.md` says), named
 `{YYYY}-{MM}-{DD}[-{TICKET}]-slug.md`, with `tags` / `projects` / `created` / `updated` / `related` /
 `description` frontmatter. The orchestrator skills read and write this format, so the two note skills
 must stay in sync.
@@ -123,20 +143,25 @@ Both produce description text only — they never create the ticket or open the 
 |---|---|
 | `glab-release` | Cut a GitLab release: pick prev tag, build a conventional-commit changelog, tag |
 | `gitlab-security-scan` | Add Free-tier security scans to GitLab CI: per-package Semgrep SAST, osv-scanner dependency scan, JUnit scan report in the Tests tab, Renovate MRs |
+| `design-shot` | Screenshot Claude Design canvas screens (whole or cropped, any state). OpenCode has no `Artifact` tool, so supply the canvas as a local export or fetchable files |
+| `breakdown` | Turn a requirements block into prioritized, human-sized tickets (orchestrates the planning skills above) |
+| `business-impact` | Frame the business value of a feature, requirement, or backlog item |
 | `telegram-notify` | Ping me on Telegram when a long-running job or watch condition resolves |
 
 ## MCP servers
 
-`.mcp.example.json` wires up:
+`opencode.example.json` wires up:
 
 - **context7** — up-to-date library/framework docs
 - **gitlab** — issues, merge requests, pipelines
-- **goland** — IDE integration (local, `127.0.0.1:64422`); main conversation only, not wired into agents
+- **goland** — IDE integration (local, `127.0.0.1:64422`); main conversation only
 - **chrome-devtools** — browser driving for UI testing
 - **figma** — Figma design metadata (figma-context-mcp) for design-vs-implementation checks
+- **mobile-device** — Android/iOS app driving for mobile QA
 
-Agents opt into servers via their `mcpServers:` frontmatter, so a server name here must match the key
-in `.mcp.json` (copied from `.mcp.example.json`).
+MCP servers are global to a project; OpenCode has no per-agent `mcpServers` list. Restrict access
+with `permissions` using the normalized `<server>_<tool>` action when an agent should not reach a
+server. Tool names here must match the keys under `mcp.servers`.
 
 ## License
 

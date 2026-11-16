@@ -2,13 +2,7 @@
 .idea/
 .DS_Store
 
-# Local Claude Code overrides (not part of the shared config)
-.claude/settings.local.json
-
-# Real MCP config — only the .mcp.example.json template is tracked
-.mcp.json
-
-# Secrets — this repo must only ever reference credentials as ${ENV_VAR}
+# Secrets — this repo must only ever reference credentials as {env:VAR} or ${ENV_VAR}
 .env
 .env.*
 *.pem
