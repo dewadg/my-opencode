@@ -148,6 +148,16 @@ Both produce description text only — they never create the ticket or open the 
 | `business-impact` | Frame the business value of a feature, requirement, or backlog item |
 | `telegram-notify` | Ping me on Telegram when a long-running job or watch condition resolves |
 
+### Security
+
+| Skill | Use for | Not for |
+|---|---|---|
+| `security-audit` | Source-only security audit — recon, coverage ledger, hunting waves, independent verification, and a report note; also threat models and focused vulnerability review | Adding CI scans (`gitlab-security-scan`); reviewing a diff (`code-reviewer`); compliance/controls assessment (`compliance-auditor`); writing the fix (`code` skill); formatting findings as a table (`defect-report`) |
+
+Adapted from Cloudflare's [`security-audit-skill`](https://github.com/cloudflare/security-audit-skill)
+(MIT, [license](.opencode/skills/security-audit/LICENSE)); rewritten source-only for OpenCode, with
+the upstream `report-schema.json` and validators kept verbatim.
+
 ## MCP servers
 
 `opencode.example.json` wires up:
