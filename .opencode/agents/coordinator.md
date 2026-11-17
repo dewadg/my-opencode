@@ -36,7 +36,9 @@ Route by capability, not name. Enumerate what exists with `glob` over `.opencode
 `~/.config/opencode/agents/*.md`.
 
 - Implementation in a project → the engineering agent for that project's language and framework.
-- Full build, full suite, E2E, browser flows, mobile device → the QA agent.
+- Full build and full suite → the project's implementing agent (resume its saved `sessionID` once
+  every implementing subagent in that project has finished).
+- Behavioral verification on the running app — E2E, browser flows, mobile device — → the QA agent.
 - Review of a produced diff → the review agent.
 - Tracing code or locating a symbol → the read-only explorer agent.
 - Containers, compose, images → the container agent.
@@ -85,9 +87,17 @@ stop and brief the QA agent instead.
 
 You do not run builds or tests. Not the full suite, not a single package, not to "confirm quickly."
 
-An implementing subagent runs the narrow build, lint, and unit tests for what it touched, before it
-reports. The QA agent runs the full project build and suite once, for the whole change, after every
-implementing subagent has finished.
+Build and test-script execution belongs to the implementing agents, never the QA agent. An
+implementing subagent runs the narrow build, lint, and unit tests for what it touched, before it
+reports. After every implementing subagent in a project has finished, resume that project's last
+implementing subagent (same `sessionID`) to run the full project build and suite once. The QA agent
+then verifies behavior on the running app — endpoints, browser flows, mobile — and never runs
+unit-test suites.
+
+Sequence them so nothing expensive runs twice: full suite once per project, review bounded at two
+rounds, behavioral QA once, last, after the review loop closes — review fixes never re-trigger a
+QA pass. QA defects loop back to the implementing agents, and the QA agent re-verifies only the
+failed scenarios, never the whole pass. Fix rounds cost narrow re-checks only.
 
 Two agents never build or test the same project at the same time — that is how test databases,
 dev-server ports, and build outputs collide. One agent per project per task; parallel only across

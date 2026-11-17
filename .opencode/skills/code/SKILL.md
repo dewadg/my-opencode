@@ -49,12 +49,17 @@ Break coding instruction into tasks, orchestrate specialized subagents. Output: 
       that mutates a shared resource inside one project: builds, full suites, dev servers,
       migrations, generated artifacts.
 
-   c. **Two verification tiers, one full run.** The implementing subagent self-checks before
-      reporting: narrow build, lint, and unit tests for the packages it touched. The QA agent then
-      runs the full project build, the full suite, and the browser or mobile flows once, for the
-      whole change, after every implementing subagent has finished. Never two agents running the
-      full build or suite in the same project; never tier-2 verification alongside an implementing
-      agent in that project.
+   c. **Pipeline order — implement, full suite, review, behavioral QA last.** Each expensive
+      stage runs once, in this order. (1) The implementing subagent self-checks before reporting:
+      narrow build, lint, and unit tests for the packages it touched. (2) After every implementing
+      subagent in a project has finished, resume that project's last implementing subagent (its
+      saved `sessionID`) to run the full project build and suite once. (3) The batch review and
+      its bounded fix round (d–g below). (4) The QA agent runs behavioral verification once, on the
+      final reviewed code — endpoints via hurl, UI via browser, mobile via device. QA runs last on
+      purpose: review fixes cannot invalidate its evidence, and no fix round re-triggers a QA pass.
+      Unit-test suites and build pipelines are always the implementing agents' job; the QA agent
+      never runs them. Never two agents building or testing the same project; never behavioral
+      verification alongside an implementing agent in that project.
 
    d. **No review until every implementing subagent finished.** Independent tasks run parallel; each
       subagent pauses when done. Review is batch-level, never per-subagent or per-project — separate
@@ -68,12 +73,21 @@ Break coding instruction into tasks, orchestrate specialized subagents. Output: 
    f. Review returns findings: split by project, **resume the same implementing subagents** (pass the
       saved `sessionID` back to the `subagent` tool with the findings verbatim, each its slice only),
       not fresh spawns — resumed agents apply fixes from context already held. Fixes for different
-      projects run parallel; same-project findings go to that project's agent in one message.
+      projects run parallel; same-project findings go to that project's agent in one message. Each
+      fix self-checks narrow — no full-suite rerun for review fixes unless a fix crosses package
+      boundaries, and then the project's last implementing agent reruns the full suite once, alone.
 
    g. All fixes in: re-review the full combined diff once, same way. Bound at two rounds total —
       findings survive the second pass, stop, bring to user.
 
-   h. **If something genuinely unclear**: use the **`question` tool** to clarify, then continue.
+   h. **QA pass, once, after the review loop closes.** One brief to one QA subagent covering every
+      touched project: behavioral verification on the running app against the acceptance criteria.
+      QA defects loop back exactly like review findings — resume the project's implementing agent
+      with the defect verbatim, it fixes and narrow re-checks, then the QA agent re-verifies only
+      the failed scenarios, never the whole pass. Defects surviving one fix round: stop, bring to
+      user.
+
+   i. **If something genuinely unclear**: use the **`question` tool** to clarify, then continue.
 
 ## Choosing subagents
 
@@ -121,9 +135,11 @@ Standing conventions every subagent follows:
 ## Verifying
 
 You verify the returned work; you do not reproduce it. The implementing subagent runs the narrow
-build, lint, and unit tests for what it touched before reporting. The QA agent runs the full project
-build, the full suite, and the browser or mobile flows once, for the whole change, after all
-implementation is in.
+build, lint, and unit tests for what it touched before reporting. After all implementation in a
+project is in, that project's last implementing subagent (resumed by `sessionID`) runs the full
+project build and suite once. The QA agent then verifies behavior on the running app — endpoints,
+browser flows, mobile — once for the whole change, after the review loop closes, so review fixes
+never re-trigger it; it never runs unit-test suites.
 
 Check the reports:
 
@@ -132,6 +148,8 @@ Check the reports:
 - Claimed files exist — `read` or `glob` them.
 - Every criterion in the brief maps to a reported result.
 - Commands carry exit codes and quoted failure output. "Should pass" is not a result.
+- Each project's full-suite run is attributed to the implementing subagent that ran it, and its
+  failures were addressed before behavioral verification started.
 - The diff matches the planned scope — no opportunistic files.
 - The project-verification report covers the acceptance criteria, with screenshots plus console and
   network findings for UI work.

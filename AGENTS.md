@@ -149,12 +149,17 @@ render it with the `call-graph` skill (indented arrow tree), never prose — so 
 returned reports. Its role is prompt-enforced, not permission-enforced — it keeps `edit`, `shell`,
 and the browser MCP tools, so nothing structurally stops it from taking a subagent's work; what
 binds it is the evidence-attribution rule (every claim cites a subagent `sessionID`) and the
-`code` skill's two-tier verification contract. Verification splits in two: the implementing subagent
-self-checks with a narrow build/lint/unit run for the packages it touched, then the QA agent runs the
-full project build, full suite, and browser/mobile flows **once**, per project, after all
-implementation is in. One full run per project at a time — concurrent full builds collide on the test
-database, dev-server port, and build output. If `qa-eng`'s tier-2 section, the `code` skill's
-Verifying section, or `coordinator.md`'s clauses change, change the other two with them.
+`code` skill's verification contract. Verification splits along the builder/QA line: the
+implementing subagent owns all build and test-script execution — a narrow build/lint/unit
+self-check for the packages it touched, then the full project build and suite **once** per
+project, run by resuming that project's last implementing subagent after the others finish. The
+QA agent owns only behavioral verification on the running app (endpoints via hurl, browser/mobile
+flows from the user's point of view), never runs unit-test suites, and runs **once**, last, after
+the review loop closes — so fix rounds never re-trigger it, and QA defects loop back to the
+implementing agents with only the failed scenarios re-verified. One full run per project at
+a time — concurrent full builds collide on the test database, dev-server port, and build output.
+If `qa-eng`'s tier-2 section, the `code` skill's Verifying section, or `coordinator.md`'s clauses
+change, change the other two with them.
 
 **Breakdown.** The `breakdown` skill orchestrates in the main thread (it must — it spawns
 `code-diver`, and subagents cannot spawn subagents): requirements `R1…Rn` → `business-impact` skill →
