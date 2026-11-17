@@ -180,6 +180,18 @@ finding-line shape, totals line, rules) shared by the `code-reviewer` and `qa-en
 invoke it instead of restating the format. If the format changes there, both agents' reports change
 with it.
 
+**Security audit.** The `security-audit` skill (adapted from Cloudflare's MIT `security-audit-skill`)
+is source-only: it reads the target and never builds, runs, or probes it, so every claim that needs
+execution becomes a `needs_validation` record with an owner-run validation plan. It orchestrates in
+the main thread because nesting depth is one — every hunter, coverage critic, and verifier is one
+`subagent` call, and independence comes from a fresh session rather than the write isolation upstream
+relied on. It owns its own `report-schema.json` plus two validators, deliberately separate from
+`defect-report`'s tier format; its note body template lives in `VALIDATION-AND-REPORTING.md`, the way
+`rca-write` and `design-write` own theirs. It writes the report as a note at
+`.notes/{YYYY}-{MM}-{DD}-security-audit-{slug}.md` with machine artifacts under
+`.notes/security-audit/{YYYY}-{MM}-{DD}-{slug}/`; changing those paths means changing the skill's
+prior-run discovery with them.
+
 **Skill/agent references.** An agent's `permissions` and a skill's directory name must match real
 artifacts under `.opencode/`; MCP server names in prose must match keys in `opencode.json`
 (`opencode.example.json` is the template). Renaming a skill, agent, or server means grepping the
