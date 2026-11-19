@@ -3,6 +3,9 @@
   "model": "deepseek/deepseek-flash#high",
   "default_agent": "tech-lead",
   "agents": {
+    "tech-lead": {
+      "model": "deepseek/deepseek-flash#high"
+    },
     "code-diver": {
       "model": "deepseek/deepseek-flash#low"
     },

@@ -19,7 +19,7 @@
         ],
         "environment": {
           "GITLAB_API_URL": "https://gitlab.com/api/v4",
-          "GITLAB_READ_ONLY_MODE": "false",
+          "GITLAB_READ_ONLY_MODE": "true",
           "GITLAB_PERSONAL_ACCESS_TOKEN": "{env:GITLAB_PAT}"
         }
       },
@@ -32,7 +32,7 @@
         "type": "local",
         "command": [
           "npx",
-          "chrome-devtools-mcp@latest",
+          "chrome-devtools-mcp@1.13.0",
           "--autoConnect"
         ]
       },
