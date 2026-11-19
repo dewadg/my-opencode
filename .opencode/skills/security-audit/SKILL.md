@@ -132,17 +132,22 @@ Resolve these before reconnaissance:
   overrides it. Confirm it is ignored by version control before writing; if it is not, stop and ask
   the user, because the audit dirties the worktree whose dirty state it records in `source_ref`.
 - **Slug** — a short dash-slug of target repo plus scope, e.g. `payments-api-auth`. One slug per run.
-- **Run directory** — `<notes-root>/security-audit/{YYYY}-{MM}-{DD}-{slug}/`.
-- **Report note** — `<notes-root>/{YYYY}-{MM}-{DD}-security-audit-{slug}.md`, written with the
-  `note-write` skill's file mechanics and frontmatter schema. This note is the only report artifact;
-  do not also emit a `REPORT.md`.
+- **Run directory** — `<notes-root>/security-audit/{YYYY}-{MM}-{DD}-{slug}/`, or
+  `<notes-root>/security-audit/{YYYY}-{MM}-{DD}-{TICKET}-{slug}/` when a ticket is known: ticket
+  segment first, then slug; the date prefix is always there, so runs sort chronologically.
+- **Report note** — `<run-dir>/{same stem}-report.md`, e.g.
+  `.notes/security-audit/2026-11-17-PAY-431-payments-api-auth/2026-11-17-PAY-431-payments-api-auth-report.md`,
+  written with the `note-write` skill's file mechanics and frontmatter schema. The leaf name carries
+  no `security-audit` — the namespaced parent directory supplies it — so the note's frontmatter
+  `tags` MUST include `security-audit`, keeping it findable by `note-search`. This note is the only
+  report artifact; do not also emit a `REPORT.md`.
 - **Source ref** — the reviewed commit and whether the worktree is dirty. Unreviewed generated or
   modified files are not another revision.
 
 `{YYYY}`, `{MM}`, and `{DD}` are zero-padded. When a same-day prior run with the same slug exists,
-append `-run-2`, then `-run-3`, to **both** the note filename and the run directory:
-`2026-11-17-security-audit-payments-api-auth-run-2.md` and
-`.notes/security-audit/2026-11-17-payments-api-auth-run-2/`.
+append `-run-2`, then `-run-3`, to the **directory** name:
+`.notes/security-audit/2026-11-17-payments-api-auth-run-2/`. The note stem mirrors the directory, so
+it inherits the suffix.
 
 Before delegation, the parent writes `run-metadata.json` with at least `run_id`, `repo`, `target`,
 `source_ref`, `profile`, `scope_paths`, `budget` (null if unset), `execution_policy: "source-only"`,
@@ -151,8 +156,11 @@ Before delegation, the parent writes `run-metadata.json` with at least `run_id`,
 the coverage ledger and `findings.json`.
 
 The run directory holds `run-metadata.json`, `architecture.md`, `coverage-ledger.json`,
-`findings.json`, `FINDINGS-DETAIL.md`, and `NEEDS-VALIDATION.md`. The note carries the report body
-and links the run directory from its `related` frontmatter.
+`findings.json`, `FINDINGS-DETAIL.md`, and `NEEDS-VALIDATION.md`. The note carries the report body;
+its `related` entries are sibling-relative — `run-metadata.json`, `architecture.md`,
+`coverage-ledger.json`, `findings.json`, `FINDINGS-DETAIL.md`, `NEEDS-VALIDATION.md` — so moving the
+directory never breaks them. A finished run moves as one `mv` to
+`<notes-root>/security-audit/archive/{YYYY}-{MM}-{DD}[-{TICKET}]-{slug}/`: no renames, links intact.
 
 ## Full audit planning
 
@@ -164,9 +172,10 @@ No one pass is complete. Build a deterministic coverage plan before hunting and 
 subagent result. `RECONNAISSANCE.md` defines the stable coverage units; `HUNTING.md` defines
 coverage-critic waves. The parent alone updates the ledger.
 
-Find prior runs by globbing `<notes-root>/security-audit/*/coverage-ledger.json` and the matching
-`<notes-root>/*-security-audit-*.md` notes. Read every compatible prior `coverage-ledger.json` and
-`findings.json` before planning:
+Find prior runs by globbing `<notes-root>/security-audit/*/coverage-ledger.json` and
+`<notes-root>/security-audit/archive/*/coverage-ledger.json` for ledgers, and
+`<notes-root>/security-audit/*/*-report.md` plus the same under `archive/` for notes. Read every
+compatible prior `coverage-ledger.json` and `findings.json` before planning:
 
 1. Compare the relevant current source with each prior record and unit. A prior source ref alone is
    not evidence that a path is unchanged.

@@ -29,7 +29,9 @@ description: What this is about in short.
 ```
 
 ### Location
-As defined in the project's `AGENTS.md`, or to `.notes/` relative to the workspace by default.
+As defined in the project's `AGENTS.md`, or to `.notes/` relative to the workspace by default. A note
+may live in a subdirectory of `.notes/` (e.g. a session directory); keep `related:` entries
+sibling-relative so moving the directory preserves them.
 
 ### Writing
 - Write note filename in format `{YYYY}-{MM}-{DD}-descriptive-slug.md` OR if ticket number is supplied `{YYYY}-{MM}-{DD}-{TICKET-NUMBER}-descriptive-slug.md`

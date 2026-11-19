@@ -57,3 +57,11 @@ Zero findings → `No issues.` (no totals line, no summary).
 - Need more context to judge → append `(see L<n> in <file>)`. Never guess.
 - Skip formatting nits unless they change meaning.
 - No praise preamble. Findings only.
+
+## Size
+
+- One line per finding, no exceptions — no multi-line findings, no nested detail blocks.
+- Past roughly 40 findings: totals and the severity breakdown in chat, the full finding list written
+  to a file path.
+- Screenshots as paths, never inline images.
+- Quoted command output capped at ~10 lines; the full log is a path.

@@ -120,6 +120,14 @@ template (analysis sections) the same way; the `analyze` command invokes `design
 the design-doc note. If either skill's section template changes, the command that references those
 sections must change with it.
 
+A `code` session with more than two tasks or more than one project also journals: its note lives
+inside the session directory — `code/{YYYY}-{MM}-{DD}-{TICKET}-{slug}/{YYYY}-{MM}-{DD}-{TICKET}-{slug}-journal.md`
+under `.notes/`, or the same without the ticket segment — beside `recon-{project}.md`,
+`evidence-{project}-{agent}.md`, `review-round-{n}.md`, and `assets/`. Directory and note share one
+stem, keeping the session one object: shipping is one `mv` to
+`.notes/code/archive/{YYYY}-{MM}-{DD}[-{TICKET}]-{slug}/`, no renames, no broken links, so `related:`
+stays sibling-relative. One writer per file; the report cap bounds the message back, never the record.
+
 **Specs.** The `spec-write` skill (driven explicitly by the `/spec` command, auto-fired by its own
 description) writes single-file specs at `specs/{slug}.md` (live); the `spec-archive` skill moves
 shipped or abandoned ones to `specs/archives/{YYYY-MM-DD}-{slug}.md`. Each spec carries frontmatter
@@ -159,7 +167,11 @@ the review loop closes — so fix rounds never re-trigger it, and QA defects loo
 implementing agents with only the failed scenarios re-verified. One full run per project at
 a time — concurrent full builds collide on the test database, dev-server port, and build output.
 If `qa-eng`'s tier-2 section, the `code` skill's Verifying section, or `coordinator.md`'s clauses
-change, change the other two with them.
+change, change the other two with them. Briefs carry scope, not payload — no pasted diffs — and
+reports are capped and point at evidence paths, so the coordinator's context stays bounded across
+rounds; `defect-report`'s size rules and `code`'s briefing cap move together — change one, change
+the other. `code`'s Tool-output discipline, `coordinator.md`'s reading rule, and `qa-eng`'s context
+discipline express one premise — tool output and turn count dominate cost — so change them together.
 
 **Breakdown.** The `breakdown` skill orchestrates in the main thread (it must — it spawns
 `code-diver`, and subagents cannot spawn subagents): requirements `R1…Rn` → `business-impact` skill →
@@ -192,10 +204,10 @@ the main thread because nesting depth is one — every hunter, coverage critic, 
 `subagent` call, and independence comes from a fresh session rather than the write isolation upstream
 relied on. It owns its own `report-schema.json` plus two validators, deliberately separate from
 `defect-report`'s tier format; its note body template lives in `VALIDATION-AND-REPORTING.md`, the way
-`rca-write` and `design-write` own theirs. It writes the report as a note at
-`.notes/{YYYY}-{MM}-{DD}-security-audit-{slug}.md` with machine artifacts under
-`.notes/security-audit/{YYYY}-{MM}-{DD}-{slug}/`; changing those paths means changing the skill's
-prior-run discovery with them.
+`rca-write` and `design-write` own theirs. It writes the report as a note inside the run directory,
+`.notes/security-audit/{YYYY}-{MM}-{DD}[-{TICKET}]-{slug}/{same-stem}-report.md`, beside the machine
+artifacts; changing those paths means changing prior-run discovery with them. Like `code`, it follows
+the same session-directory rule: one stem, sibling-relative `related`, archive by one `mv`.
 
 **Skill/agent references.** An agent's `permissions` and a skill's directory name must match real
 artifacts under `.opencode/`; MCP server names in prose must match keys in `opencode.json`

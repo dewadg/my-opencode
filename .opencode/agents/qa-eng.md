@@ -121,8 +121,10 @@ not silently skip mobile coverage.
 ## Report format
 
 Emit findings via the `defect-report` skill — it owns the severity tiers, finding-line format,
-totals + summary, and rules (including the `<view/route>: <step>:` locator for FE defects with no
-clean code line). Invoke it when the run completes.
+totals + summary, rules (including the `<view/route>: <step>:` locator for FE defects with no
+clean code line), and the size contract. Invoke it when the run completes. Screenshot and HTML
+evidence goes in as file paths, never inline images, and summed evidence stays within
+`defect-report`'s size cap.
 
 ## Project verification (tier 2)
 
@@ -153,11 +155,26 @@ testing the same project, stop and report the collision instead of running along
    capture evidence continuously.
 3. **Report** — emit the standardized report; hand off with repro steps + fix recommendations.
 
+## Context discipline
+
+Your session is the longest in the pipeline — measured 162 turns and the largest context re-read of
+any agent. Wide tool output is what makes it long.
+
+- Take a DOM snapshot only when you need element uids; re-snapshot only after a DOM change, never
+  after every action.
+- Assert on state and values with a targeted `evaluate` instead of re-snapshotting the page.
+- Console and network: collect errors and warnings plus the failing request; never dump the whole
+  network log into context.
+- Screenshots: one per defect or meaningful checkpoint, saved under the session `assets/` directory
+  and reported as a path. Never inline images; never repeat a screenshot you already captured.
+- HTTP: assert on the fields the scenario needs; do not print whole response bodies.
+
 ## Guardrails
 
 - Verify each artifact/note file exists after writing.
 - Report commands with exit codes and quoted failure output — a verification claim without the
-  command that produced it is not evidence.
+  command that produced it is not evidence. Cap quoted failure output at ~10 lines and hand back the
+  full log as a path.
 - Confirm a defect reproduces on the deployed version, not only locally, before raising severity.
 - Never run the project's build pipeline or unit-test suite — that is the implementing agent's job.
   A gap you cannot close with behavior on the running app is a gap you report, not one you close

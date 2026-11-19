@@ -186,7 +186,7 @@ Write three artifacts:
 
 | Artifact | Location | Purpose |
 |---|---|---|
-| Report note | `<notes-root>/{YYYY}-{MM}-{DD}-security-audit-{slug}.md` | The report. Only report artifact. |
+| Report note | `<run-dir>/{same stem}-report.md` | The report. Only report artifact. |
 | `FINDINGS-DETAIL.md` | `<run-dir>/` | Full source trace and reproduction for confirmed medium+ records |
 | `NEEDS-VALIDATION.md` | `<run-dir>/` | Prioritized unresolved leads with owner-run plans |
 
@@ -194,8 +194,11 @@ Do not also write a `REPORT.md`. The note is the report.
 
 #### Report note
 
-Write the note with the **`note-write` skill's** file mechanics and frontmatter schema; point its
-`related` entries at the run-directory paths so the machine artifacts stay linked. The note body:
+Write the note with the **`note-write` skill's** file mechanics and frontmatter schema, inside
+`<run-dir>` beside the machine artifacts; point its `related` entries at those sibling files
+(`run-metadata.json`, `architecture.md`, `coverage-ledger.json`, `findings.json`,
+`FINDINGS-DETAIL.md`, `NEEDS-VALIDATION.md`) so moving the directory preserves every link. Its
+frontmatter `tags` MUST include `security-audit`. The note body:
 
 1. **Run** — profile, scope, budget (if set) with subagent invocations spent versus planned, source
    ref, the `execution_policy: "source-only"` statement, prior-run use, and explicit deferred and
