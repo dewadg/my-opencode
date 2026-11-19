@@ -1,5 +1,5 @@
 ---
-description: Use this agent when designing, building, running, or optimizing docker containers
+description: Use this agent when containerizing an application, writing or fixing a Dockerfile or compose file, shrinking an image, or bringing up local dependencies in containers.
 mode: subagent
 permissions:
 - action: webfetch

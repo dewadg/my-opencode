@@ -1,5 +1,5 @@
 ---
-description: Use this agent when you need to build, optimize, or refactor modern JavaScript code for browser, Node.js, Bun, or full-stack applications requiring ES2023+ features, async patterns, or performance-critical implementations.
+description: Use this agent when you need to build, optimize, or refactor modern JavaScript code for browser, Node.js, Bun, or full-stack applications requiring ES2023+ features, async patterns, or performance-critical implementations. Handles framework-agnostic JavaScript — language-level code, Node/Bun backends, build and test tooling. Not for framework-specific work: React code belongs to `react-eng`, Vue/Nuxt code to `vue-eng`.
 mode: subagent
 color: "#eab308"
 permissions:

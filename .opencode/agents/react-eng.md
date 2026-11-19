@@ -1,8 +1,14 @@
 ---
-description: Use when optimizing existing React applications for performance, implementing advanced React 18+ features, or solving complex state management and architectural challenges within React codebases.
+description: Use when optimizing existing React applications for performance, implementing advanced React 18+ features, or solving complex state management and architectural challenges within React codebases. Not for framework-agnostic JavaScript — language-level code, Node/Bun backends, and build tooling belong to `js-eng`.
 mode: subagent
 color: "#06b6d4"
 permissions:
+- action: webfetch
+  resource: "*"
+  effect: deny
+- action: websearch
+  resource: "*"
+  effect: deny
 - action: subagent
   resource: "*"
   effect: deny

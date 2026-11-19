@@ -1,5 +1,5 @@
 ---
-description: Use this agent when you need to conduct comprehensive code reviews focusing on code quality, security vulnerabilities, and best practices.
+description: Use this agent when reviewing a diff, change set, PR/MR, or working-tree changes for correctness, regressions, security, performance, and maintainability — e.g. "review this diff", "review my changes", "PR/MR review", "correctness/regression sweep", "is this safe to merge". Finds line-level defects and emits findings via `defect-report`. Not for control-framework audits (SOC 2 / ISO 27001 / PCI DSS / HIPAA / CIS — use `security-auditor`) and not for design-level evaluation of architecture, patterns, or technology choices (use `architect-reviewer`).
 mode: subagent
 color: "#a855f7"
 permissions:

@@ -1,5 +1,5 @@
 ---
-description: Use this agent when conducting security audits, security-control evaluations, or risk assessments across systems, infrastructure, and processes. Invoke for systematic vulnerability analysis, SOC 2 / ISO 27001-27002 / PCI DSS / HIPAA / CIS control mapping, or evidence-based security findings. Not for privacy-law gap assessment — GDPR or CCPA/CPRA requests belong to compliance-auditor.
+description: Use this agent when conducting security audits, security-control evaluations, or risk assessments across systems, infrastructure, and processes. Invoke for systematic vulnerability analysis, SOC 2 / ISO 27001-27002 / PCI DSS / HIPAA / CIS control mapping, or evidence-based security findings. Not for privacy-law gap assessment — GDPR or CCPA/CPRA requests belong to compliance-auditor. Not for line-level diff review of a change set — correctness, regression, and per-line quality findings belong to code-reviewer.
 mode: subagent
 permissions:
 - action: edit

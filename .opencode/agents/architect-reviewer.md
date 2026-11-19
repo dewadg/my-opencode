@@ -1,5 +1,5 @@
 ---
-description: Use this agent when you need to evaluate system design decisions, architectural patterns, and technology choices at the macro level.
+description: Use this agent for architecture reviews and design-level evaluation — e.g. "architecture review", "should we split this service", "is this design sound", "which pattern should we use", "review this design document", "is this technology choice right", "where are our boundaries wrong". Judges module/service boundaries, scalability, integration strategies, technology choices, and technical debt, returning options with trade-offs. Not for line-level diff review or correctness/regression sweeps of a change set (use `code-reviewer`) and not for control-framework or vulnerability audits (use `security-auditor`).
 mode: subagent
 permissions:
 - action: webfetch

@@ -139,7 +139,10 @@ it, same stem plus `-journal.md`, beside `recon-{project}.md`, `evidence-{projec
 finished session by one `mv` to `.notes/code/archive/{YYYY}-{MM}-{DD}[-{TICKET}]-{slug}/`; `.notes/`
 never enters a commit and is outside review scope.
 
-IDs: `D<n>` decisions, `R<round>.F<n>` review findings, `Q<n>` QA defects. Write at natural boundaries
+IDs: `D<n>` decisions, `R<round>.F<n>` review findings, `Q<n>` QA defects. `Q` ids are numbered
+sequentially across the whole session in report order — never restarted per QA pass, so two passes
+cannot both produce a `Q1`. `R<round>.F<n>` uses the review round number as its round segment, with
+`n` sequential within that round. Write at natural boundaries
 — plan set, unit closed, change set closed — and read at resume boundaries (a context break, a new
 session) and before the final report; not every round.
 

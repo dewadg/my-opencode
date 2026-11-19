@@ -1,5 +1,5 @@
 ---
-description: Use this agent when building Vue 3 applications that require Composition API mastery, reactivity optimization, or Nuxt 3 development with enterprise-scale performance concerns.
+description: Use this agent when building Vue 3 applications that require Composition API mastery, reactivity optimization, or Nuxt 3 development with enterprise-scale performance concerns. Not for framework-agnostic JavaScript — language-level code, Node/Bun backends, and build tooling belong to `js-eng`.
 mode: subagent
 color: "#22c55e"
 permissions:
