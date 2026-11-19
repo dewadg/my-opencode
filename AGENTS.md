@@ -5,8 +5,10 @@ Guidance for OpenCode (V2) when working in this repository.
 ## What this repository is
 
 A personal collection of OpenCode **configuration artifacts** — agent definitions, skills, slash
-commands, and an MCP server config example. It is not an application: there is nothing to build,
-lint, or test, and no package manager. The "code" here is markdown that OpenCode itself consumes.
+commands, and an MCP server config example. It is not an application and has no package manager: no
+build or lint step, and the only runnable check is the security-audit validator suite,
+`node --test .opencode/skills/security-audit/*.test.cjs`. The "code" here is markdown that OpenCode
+itself consumes.
 
 The `.opencode/` tree is live project config: OpenCode discovers it automatically while working in
 this repo. To use the artifacts everywhere, copy them into the global config (plain copies, not
@@ -30,14 +32,15 @@ curated subset, not a mirror.
   command name, `$1`/`$2` to positional arguments, and `` !`shell` `` injects command output. The
   body reads as instructions to the current agent.
 - `.opencode/skills/<name>/SKILL.md` — one skill per directory. The directory name is the skill ID.
-  Supporting scripts and references live alongside (e.g.
-  `.opencode/skills/telegram-notify/scripts/send_telegram.sh`).
+  Supporting scripts and `references/` (long examples, checklists, per-seam briefs) live alongside
+  (e.g. `.opencode/skills/telegram-notify/scripts/send_telegram.sh`).
 - `opencode.json` — project config: schema, the session default `model`, and the `agents` block that
   pins every subagent's model (MCP servers stay opt-in).
 - `opencode.example.json` — example `mcp.servers` block (`context7`, `gitlab`, `goland`,
   `chrome-devtools`, `figma`, `mobile-device`); merge it into a project's or the global
   `~/.config/opencode/opencode.json`. Secrets are `{env:VAR}` references, never literals. `goland`
-  is main-conversation-only — no agent is restricted to it.
+  is main-conversation-only — no agent is restricted to it. The GitLab server defaults to
+  `GITLAB_READ_ONLY_MODE: "true"`; flip it to `"false"` only when you want issue/MR writes.
 
 ## Agent frontmatter
 
@@ -49,12 +52,12 @@ mode: subagent                 # subagent | primary | all
 model: provider/model#variant  # leave out — subagent models are pinned in opencode.json's agents block
 color: "#3b82f6"               # optional six-digit hex
 permissions:                   # ordered rules; last match wins
-  - action: edit
-    resource: "*"
-    effect: deny
-  - action: subagent
-    resource: "*"
-    effect: deny
+- action: edit
+  resource: "*"
+  effect: deny
+- action: subagent
+  resource: "*"
+  effect: deny
 ---
 ```
 
@@ -66,8 +69,8 @@ globally under `mcp.servers`; per-agent server selection is not supported. Skill
 every agent; a skill's instructions can say which agent is expected to use it.
 
 Subagent models are pinned centrally, not per file: every agent here omits `model` from its frontmatter
-and takes one from the `agents` block in `opencode.json` (`#low` for explorers and language engineers,
-`#high` for reviewers and auditors). Switch every subagent's model by editing that one file —
+and takes one from the `agents` block in `opencode.json` (`#low` for producers and explorers, `#high`
+for reviewers, auditors and advisors). Switch every subagent's model by editing that one file —
 OpenCode reloads config on save. When copying agents into `~/.config/opencode/agents/`, merge the same
 `agents` block into `~/.config/opencode/opencode.json`, or the copied agents inherit the parent session
 model instead.
@@ -218,9 +221,10 @@ artifacts; changing those paths means changing prior-run discovery with them. Li
 the same session-directory rule: one stem, sibling-relative `related`, archive by one `mv`.
 
 **Skill/agent references.** An agent's `permissions` and a skill's directory name must match real
-artifacts under `.opencode/`; MCP server names in prose must match keys in `opencode.json`
-(`opencode.example.json` is the template). Renaming a skill, agent, or server means grepping the
-whole repo for the old name.
+artifacts under `.opencode/`; MCP server names in prose must match keys in the template
+`opencode.example.json` (`mcp.servers`), or in a user's own global/project `opencode.json` if they
+defined the server there. Renaming a skill, agent, or server means grepping the whole repo for the
+old name.
 
 **Skill portability.** Dependencies point one way: an agent may reference a skill, a skill may
 reference another skill, and a skill must never reference an agent file or require a specific agent —
