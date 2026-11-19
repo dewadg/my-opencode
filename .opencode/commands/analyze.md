@@ -61,6 +61,15 @@ number, and may name the related projects.
       Continue until all tasks are done. Each subagent gives its findings and its opinion; the main
       thread compiles them into the note.
 
+      The brief is self-contained: a spawned session starts with no memory of this one — goal, the
+      files or paths to inspect, what "done" looks like, and what is out of scope. Point at paths and
+      symbols; never paste file bodies or diffs into a brief.
+
+      Report contract: findings with `file:line`, commands with exit codes, at most ~15 lines, no
+      restated brief, no prose preamble. Every claim in your synthesis cites the producing subagent's
+      `sessionID`; an unattributable claim does not go in the note. A thin or ambiguous report: resume
+      that same subagent with the specific gap in ~5 lines — never re-run its investigation yourself.
+
    c. **If a finding requires user input** (unclear context), use the **`question` tool** to
       clarify, then continue.
 

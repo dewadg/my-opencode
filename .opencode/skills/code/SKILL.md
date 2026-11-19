@@ -38,9 +38,8 @@ Break coding instruction into tasks, orchestrate specialized subagents. Output: 
 
    Track the plan as a checklist in your reply (or in a note file) — single tracking system for this skill, no parallel todo list.
 
-   More than two tasks: journal the plan (see Session artifacts) and have each brief cite its section
-   anchor; when journaling applies the journal is the plan — no separate plan file. Two tasks or
-   fewer: an in-chat checklist is enough.
+   More than two tasks: the primary records the plan and each brief cites its section anchor; that
+   record is the plan — no separate plan file. Two tasks or fewer: an in-chat checklist is enough.
 
    Decide changes before writing code, record as tasks in dependency order (shared contracts before consumers; backend before frontend calling it). Every behavioral change gets a test task alongside when the project supports one.
 
@@ -147,75 +146,12 @@ Standing conventions every subagent follows:
 - **Comments**: comments, test names, story descriptions explain code behavior and intent. No review tags, ticket numbers, task ids.
 - **Generated code**: never hand-edit generated files (API clients, schema types, mocks, API docs). Change source of truth, re-run generator.
 
-## Session artifacts
+## Evidence files
 
-More than two tasks, or more than one project: journal the run. Two tasks or fewer in one project:
-skip — the chat report is enough. When it applies, the journal REPLACES a separate plan file; still
-one tracking system.
-
-Session dir: `.notes/code/{YYYY}-{MM}-{DD}-{slug}/`, or
-`.notes/code/{YYYY}-{MM}-{DD}-{TICKET}-{slug}/` when a ticket is known; the date prefix keeps `ls`
-chronological. The journal note lives inside it, same stem plus `-journal.md` —
-`.notes/code/{YYYY}-{MM}-{DD}-{TICKET}-{slug}/{YYYY}-{MM}-{DD}-{TICKET}-{slug}-journal.md` — which
-satisfies `note-write`'s filename rule (`{YYYY}-{MM}-{DD}[-{TICKET}]-{slug}.md`); the repeated stem is
-deliberate, and keeping the note inside makes the session one object: archiving is one `mv` of the
-directory, no renames and no broken links. When the change ships or is abandoned and the journal is
-final, move the whole directory to `.notes/code/archive/{YYYY}-{MM}-{DD}[-{TICKET}]-{slug}/`. Reuse the
-existing directory when resuming or continuing the same change; never create a second one for it.
-Suffix `-2` only when an unrelated change already took the name. Artifact names inside are fixed, and
-`related:` entries are sibling-relative — never workspace-relative.
-
-- `<session dir>/<stem>-journal.md` — the note, `note-write` frontmatter; the orchestrator only.
-- `<session dir>/recon-{project}.md` — the read-only explorer, one per project.
-- `<session dir>/evidence-{project}-{agent}.md` — that subagent, its own path.
-- `<session dir>/review-round-{n}.md` — orchestrator only, when a round yields more than ~40 findings
-  (the `defect-report` size rule).
-- `<session dir>/assets/` — screenshots, hurl files, raw logs.
-
-One writer per file; parallel implementers write separate evidence files. The ~15-line cap is on the
-message back to the orchestrator, never on the record — commands, exit codes, failure log, and files
-touched go to the subagent's evidence file. The journal is append-only; only `State` cells and the
-`updated:` date change in place. IDs: `D<n>` decisions, `R<round>.F<n>` review findings, `Q<n>` QA
-defects. Write at natural boundaries — when the plan is set, when a unit closes, when the change set
-closes — and read at resume boundaries (a context break, a new session) and before the final report,
-not every round. `.notes/` is outside review scope; it goes in the reviewer exclusion list.
-
-```markdown
----
-tags: [code]
-projects: [<project>]
-created: {YYYY-MM-DD}
-updated: {YYYY-MM-DD}
-related: [recon-<project>.md, evidence-<project>-<agent>.md]
-description: <change> — session journal
----
-# <change title>
-<intent, two lines>
-status: shipped | partial | blocked
-
-## Status
-`Status` is per change unit — append a row per unit, never overwrite.
-| Task | Project | Owner | State | Evidence |
-|---|---|---|---|---|
-| T1 | <project> | <agent> | done | evidence-<project>-<agent>.md |
-## Applies
-| # | Change unit | Date | ses_ | Result | Commits |
-|---|---|---|---|---|---|
-## Decisions
-| # | Decision | Rejected | Why | `ses_` |
-|---|---|---|---|---|
-| D1 | <choice> | <alternative> | <why> | `ses_…` |
-## Coordination log
-| When | `ses_` | Agent | Project | Task | Brief |
-|---|---|---|---|---|---|
-| plan | `ses_…` | <agent> | <project> | T1 | <anchor> |
-## Findings ledger
-| Round | ID | Tier | Location | Owner | State |
-|---|---|---|---|---|---|
-| 1 | R1.F1 | 🔴 bug | <path>:<line> | <agent> | fixed |
-## Outcome
-<what shipped, what was deferred, user follow-ups>
-```
+Each subagent writes its own `evidence-{project}-{agent}.md` into the session directory the brief
+names — one writer per file, and parallel implementers never share one. The ~15-line cap is on the
+message back to the orchestrator, never on the record: commands, exit codes, failure logs, and files
+touched go to the evidence file. `.notes/` stays out of the review diff.
 
 ## Token discipline
 

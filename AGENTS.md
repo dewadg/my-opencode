@@ -120,13 +120,11 @@ template (analysis sections) the same way; the `analyze` command invokes `design
 the design-doc note. If either skill's section template changes, the command that references those
 sections must change with it.
 
-A `code` session with more than two tasks or more than one project also journals: its note lives
-inside the session directory — `code/{YYYY}-{MM}-{DD}-{TICKET}-{slug}/{YYYY}-{MM}-{DD}-{TICKET}-{slug}-journal.md`
-under `.notes/`, or the same without the ticket segment — beside `recon-{project}.md`,
-`evidence-{project}-{agent}.md`, `review-round-{n}.md`, and `assets/`. Directory and note share one
-stem, keeping the session one object: shipping is one `mv` to
-`.notes/code/archive/{YYYY}-{MM}-{DD}[-{TICKET}]-{slug}/`, no renames, no broken links, so `related:`
-stays sibling-relative. One writer per file; the report cap bounds the message back, never the record.
+A `code` session with more than two tasks or more than one project also journals: the tech lead is its
+single writer, and `tech-lead.md` owns the journal's path and skeleton —
+`.notes/code/{YYYY}-{MM}-{DD}[-{TICKET}]-{slug}/` with the same-stem `-journal.md` inside, archived by
+one `mv` to `.notes/code/archive/`. One writer per file; the report cap bounds the message back, never
+the record.
 
 **Specs.** The `spec-write` skill (driven explicitly by the `/spec` command, auto-fired by its own
 description) writes single-file specs at `specs/{slug}.md` (live); the `spec-archive` skill moves
@@ -228,6 +226,13 @@ whole repo for the old name.
 reference another skill, and a skill must never reference an agent file or require a specific agent —
 a skill is invoked under whatever primary is active. Capability phrases are how a skill names a
 collaborator.
+
+**Instruction layering.** Doctrine that must apply to every run lives in this file and in the primary
+agent's prompt. Per-task workflow lives in each skill's `SKILL.md`, which is self-contained: a skill
+may reference another skill as an optional enrichment, never as a precondition, and never an agent
+file or path. Depth — long examples, checklists, per-seam briefs — lives in the owning skill's own
+`references/` directory, read when the skill directs it to. Skills are advertised by description only
+and their bodies load on demand, so a rule split across two skills can silently go unloaded.
 
 ## Commits
 
