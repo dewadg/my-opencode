@@ -1,5 +1,5 @@
 ---
-description: Use when building, optimizing, refactoring JavaScript for browser, Node.js, Bun, full-stack apps needing ES2023+, async or performance-critical code; framework-agnostic JavaScript: language-level code, Node/Bun backends, build/test tooling. Not for framework-specific work: React code belongs to `react-eng`, Vue/Nuxt code to `vue-eng`.
+description: Use when building, optimizing, refactoring JavaScript for browser, Node.js, Bun, full-stack apps needing ES2023+, async or performance-critical code; framework-agnostic JavaScript — language-level code, Node/Bun backends, build/test tooling. Not for framework-specific work (React code belongs to `react-eng`, Vue/Nuxt code to `vue-eng`).
 mode: subagent
 color: "#eab308"
 permissions:
