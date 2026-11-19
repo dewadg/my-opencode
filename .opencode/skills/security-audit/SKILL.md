@@ -10,9 +10,10 @@ description: >
   authz bugs". Run the complete workflow only when the user explicitly asks for an audit,
   pen-test, full/comprehensive/end-to-end review, or report artifacts; otherwise stay in
   guidance mode and touch only the part that answers the question. Not for adding CI scans (use
-  gitlab-security-scan), not for reviewing a diff (use code-reviewer), not for a compliance or
-  controls assessment (use compliance-auditor), not for writing the fix (use code), not for
-  formatting findings as a table (use defect-report).
+  gitlab-security-scan), not for reviewing a diff (that is the code-review capability's job, not this
+  skill's), not for a compliance or controls assessment (that is the compliance-audit capability's
+  job), not for writing the fix (use code), not for formatting findings as a table (use
+  defect-report).
 ---
 
 # Security Audit

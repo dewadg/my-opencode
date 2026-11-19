@@ -7,7 +7,9 @@ description: >
   or "how should we test this feature" — and when scoping a feature BEFORE development (pre-dev,
   defines what to build) or verifying one AFTER (post-dev, defines what to check). Covers happy
   path, alternate paths, edge cases, and error/negative paths. Not for executing the tests (the
-  the agent executing the tests owns that) or writing unit test code (the language engineering agent does).
+  agent executing the tests owns that), not for writing unit test code (the language engineering
+  capability does that), and not for a ticket's Acceptance Criteria section — that section belongs to
+  ticket-description, which owns the ticket body; this skill produces the standalone scenario table.
 
 ---
 

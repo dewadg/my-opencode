@@ -354,6 +354,10 @@
                 "visibleContent": true
               }
             },
+            "anyOf": [
+              { "required": ["local"] },
+              { "required": ["deployment"] }
+            ],
             "additionalProperties": false
           }
         },

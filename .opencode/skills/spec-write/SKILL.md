@@ -173,17 +173,17 @@ separate tasks. Too small (overhead dwarfs the work, or one agent would do sever
 merge into one.
 
 ### Wave 1 — {theme} (parallel: independent projects)
-- [ ] [golang-eng] {task} — packages/chatto-server/internal/{pkg}/
+- [ ] [backend engineer for {stack}] {task} — packages/chatto-server/internal/{pkg}/
   - related sub-step covered by the same spawn
-- [ ] [vue-eng] {task} — packages/chatto-ui/src/{dir}/
+- [ ] [web frontend engineer for {framework}] {task} — packages/chatto-ui/src/{dir}/
 
 ### Wave 2 — {theme} (depends on Wave 1)
-- [ ] [golang-eng] {task that consumes Wave 1 contracts}
-- [ ] [qa-eng] write visitor-chat tests — packages/chatto-server/internal/conversation/
+- [ ] [backend engineer for {stack}] {task that consumes Wave 1 contracts}
+- [ ] [QA] write visitor-chat tests — packages/chatto-server/internal/conversation/
 
 ### Wave 3 — Verify & review
-- [ ] [code-reviewer] review all waves
-- [ ] [general] build + test green (`make build && make test`)
+- [ ] [review] review all waves
+- [ ] [implementing agent] build + test green (`make build && make test`)
 ```
 
 ## Lean principles (apply throughout)

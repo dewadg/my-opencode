@@ -1,6 +1,15 @@
 ---
 name: note-search
-description: Retrieve relevant notes. ALWAYS use when the user needs to retrieve persisted knowledge from notes.
+description: >-
+  Retrieve the notes already written in this workspace: search `.notes/` (including its `archive/`
+  subdirectory) by tag or topic, ticket number, project, or date, and read only a candidate note's
+  frontmatter before deciding whether to open the body. Owns the retrieval half of the shared note
+  format — the frontmatter fields that can be filtered on (`tags`, `projects`, `created`, `updated`,
+  `related`, `description`) and the grep recipes that target them. ALWAYS use when the user needs to
+  recall persisted knowledge — "search the notes for…", "what did we decide about…", "find the
+  RCA/design doc on…", "any notes on ticket PROJ-123?", "did we hit this before?" — or when another
+  skill needs prior context on an area before starting. Not for writing, updating, or fixing a note
+  (use note-write).
 
 ---
 
@@ -48,7 +57,7 @@ grep -rl "tags: .*keywords" .notes/
 
 Search with `projects` field:
 ```
-grep -rl "tags: .*user-management-svc" .notes/
+grep -rl "projects: .*user-management-svc" .notes/
 ```
 
 Search by date:

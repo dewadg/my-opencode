@@ -17,6 +17,7 @@ const SUPPORTED_TYPES = new Set(["object", "array", "string", "integer", "number
 const SUPPORTED_KEYWORDS = new Set([
   "$comment",
   "additionalProperties",
+  "anyOf",
   "const",
   "description",
   "enum",
@@ -341,6 +342,13 @@ function collectSchemaErrors(schema, location = "schema") {
         node.oneOf.forEach((branch, index) => check(branch, `${p}.oneOf[${index}]`));
       }
     }
+    if (hasOwn(node, "anyOf")) {
+      if (!Array.isArray(node.anyOf) || node.anyOf.length === 0) {
+        errors.push(`${p}.anyOf: expected a non-empty array`);
+      } else {
+        node.anyOf.forEach((branch, index) => check(branch, `${p}.anyOf[${index}]`));
+      }
+    }
   }
 
   check(schema, location);
@@ -377,6 +385,11 @@ function validate(value, schema, p, errors) {
         }
       }
     }
+  }
+
+  if (hasOwn(schema, "anyOf")) {
+    const matched = schema.anyOf.some((branch) => collectUnchecked(value, branch, p).length === 0);
+    if (!matched) errors.push(`${p}: must match at least one schema in anyOf; matched 0`);
   }
 
   if (hasOwn(schema, "const") && !deepEqual(value, schema.const)) {

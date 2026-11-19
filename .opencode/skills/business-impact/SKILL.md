@@ -10,7 +10,7 @@ description: >
   prioritize this", "help me pitch this to stakeholders", "what's the impact if we don't do this",
   "what's the MVP here", or when the breakdown skill reaches its framing step. Not for ranking or
   sequencing tickets (breakdown owns prioritization), estimating effort (breakdown), or marketing
-  positioning and copy (use product-marketing / copywriting).
+  positioning and copy (a different job, handled outside this skill).
 
 ---
 

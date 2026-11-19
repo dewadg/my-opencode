@@ -10,8 +10,8 @@ description: >
   "walk me through what happens when a project is created", "how does X reach the DB", "analyze
   how Y flows end to end", "what's the request flow for Z". Not for executing code, writing tests,
   writing the code itself, or doing a feature-impact / root-cause analysis — when "analyze" means
-  scope-the-change or find-the-bug, use analyze / investigate instead (they end in a note, this
-  ends in a tree).
+  scope-the-change or find-the-bug, use the `/analyze` and `/investigate` commands instead (they end
+  in a note, this ends in a tree).
 
 ---
 

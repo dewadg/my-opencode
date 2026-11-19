@@ -29,7 +29,7 @@ Break coding instruction into tasks, orchestrate specialized subagents. Output: 
 
    **Pre-flight recon.** When the change spans more than one project, or has more than two tasks,
    launch one read-only explorer subagent per project, in parallel. Its single deliverable is a recon
-   digest file at `<session dir>/recon-{project}.md` containing: the entry points the change touches,
+   digest file at `<session dir>/recon-{project}.md` (see **Session directory** below) containing: the entry points the change touches,
    the project's conventions, the narrow and full test/build commands, cross-project contract touch
    points, and a `file:line` index. Every later brief cites that file and does not restate its
    content. A single-project, small change skips recon.
@@ -42,6 +42,14 @@ Break coding instruction into tasks, orchestrate specialized subagents. Output: 
    record is the plan — no separate plan file. Two tasks or fewer: an in-chat checklist is enough.
 
    Decide changes before writing code, record as tasks in dependency order (shared contracts before consumers; backend before frontend calling it). Every behavioral change gets a test task alongside when the project supports one.
+
+   **Spec execution (`specs/{slug}.md`).** When what is being built is a spec, its Todo list is the
+   source of truth for progress and this skill keeps it honest. Before starting each task, re-read the
+   spec from disk — an `edit` against a stale copy clobbers a concurrent check. The instant a task's
+   owning subagent reports its work complete, and any test task paired with it is green, flip that one
+   checkbox `[ ]` → `[x]` with the `edit` tool; never pre-check a task still in flight, never batch the
+   flips to the end. Every box must read `[x]` before the caller archives the spec; any `[ ]` means the
+   change is not done.
 
 4. **Delegate, then verify and review once for the whole change**
 
@@ -142,9 +150,36 @@ accepting the dump.
 
 Standing conventions every subagent follows:
 
-- **Tests**: testing skill exists for language (example: Go unit-test skill): use it. Otherwise match existing test style in that project.
+- **Tests**: a testing skill exists for the language — `golang-unit-test` for Go — so use it. Otherwise match existing test style in that project.
 - **Comments**: comments, test names, story descriptions explain code behavior and intent. No review tags, ticket numbers, task ids.
 - **Generated code**: never hand-edit generated files (API clients, schema types, mocks, API docs). Change source of truth, re-run generator.
+
+## Session directory
+
+Everything this run produces goes into one session directory:
+
+`.notes/code/{YYYY}-{MM}-{DD}-{slug}/`, or `{YYYY}-{MM}-{DD}-{TICKET}-{slug}/` when a ticket is
+known — date prefix always, ticket segment before the slug. That `<session dir>` is what briefs and
+evidence paths point at; the caller may name a different root per the project's own `AGENTS.md`, and
+the layout below still applies.
+
+- `{stem}-journal.md` — the run's journal, sharing the directory's stem.
+- `recon-{project}.md` — one per project, from pre-flight recon.
+- `evidence-{project}-{agent}.md` — one per subagent, one writer per file.
+- `review-round-{n}.md` — the findings of review round `n`.
+- `assets/` — screenshots and other non-markdown evidence.
+
+`related:` entries are sibling-relative. Ids are numbered within the session:
+
+| Prefix | Means | Numbering |
+|---|---|---|
+| `D<n>` | a decision taken for the user | sequential |
+| `R<round>.F<n>` | a review finding | round segment = review round, `n` in-round |
+| `Q<n>` | a QA defect | sequential across every QA pass, in report order — never restarted per pass |
+
+Archive a finished session by one `mv` to `.notes/code/archive/{YYYY}-{MM}-{DD}[-{TICKET}]-{slug}/`:
+the stem moves with it, so sibling-relative links stay valid. `.notes/` never enters a commit and is
+outside review scope.
 
 ## Evidence files
 

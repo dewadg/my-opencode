@@ -31,17 +31,19 @@ Don't send a "starting now" message unless asked — they want the result.
 
 ## How to send
 
-Run the bundled script (absolute path to this skill's `scripts/send_telegram.sh`) with the message as the first argument:
+Run the bundled script with the message as the first argument. A skill's paths resolve relative to
+its own directory, so the script is `<skill-dir>/scripts/send_telegram.sh`
+(`.opencode/skills/telegram-notify` in this repo):
 
 ```bash
-~/.config/opencode/skills/telegram-notify/scripts/send_telegram.sh "$MESSAGE"
+<skill-dir>/scripts/send_telegram.sh "$MESSAGE"
 ```
 
 When the content is a single link, add a `--copy` flag with the raw URL so the
 message carries a one-tap copy-to-clipboard button (see "Single link" below):
 
 ```bash
-~/.config/opencode/skills/telegram-notify/scripts/send_telegram.sh "$MESSAGE" --copy "$URL"
+<skill-dir>/scripts/send_telegram.sh "$MESSAGE" --copy "$URL"
 ```
 
 The script handles transport: it reads `TELEGRAM_BOT_TOKEN` and
@@ -53,7 +55,7 @@ To attach an image, add `--photo` with a URL, a local file path, or a Telegram
 `file_id` (see "Photo / image" below):
 
 ```bash
-~/.config/opencode/skills/telegram-notify/scripts/send_telegram.sh "$CAPTION" --photo "$IMAGE"
+<skill-dir>/scripts/send_telegram.sh "$CAPTION" --photo "$IMAGE"
 ```
 
 To preview a message without sending, set `TELEGRAM_DRY_RUN=1`; the script prints
@@ -148,7 +150,7 @@ image's **caption**, so write it exactly like a normal message title + content;
 the same MarkdownV2 escaping rules apply.
 
 ```bash
-send_telegram.sh "$CAPTION" --photo "<url | local-path | file_id>"
+<skill-dir>/scripts/send_telegram.sh "$CAPTION" --photo "<url | local-path | file_id>"
 ```
 
 The `--photo` value is one of:
@@ -168,7 +170,7 @@ Notes:
 
 **Example — screenshot of a passing run:**
 ```bash
-send_telegram.sh "*✅ E2E green*
+<skill-dir>/scripts/send_telegram.sh "*✅ E2E green*
 
 widget welcome \+ buttons verified" --photo "/tmp/welcome-e2e.png"
 ```

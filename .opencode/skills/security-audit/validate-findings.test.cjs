@@ -178,6 +178,14 @@ test("accepts empty output and each complete branch", () => {
   assert.deepEqual(errorsFor([deploymentOnly]), []);
 });
 
+test("schema and validator both reject an empty validation_plan", () => {
+  const planSchema = schema.items.oneOf[1].properties.validation_plan;
+  assert(collect({}, planSchema, "$plan").some((error) => error.includes("anyOf")));
+  const finding = needsValidation();
+  finding.validation_plan = {};
+  assert(errorsFor([finding]).some((error) => error.includes("validation_plan")));
+});
+
 test("allows a one-line finding trace", () => {
   const finding = confirmed();
   finding.trace = [source("entrypoint")];

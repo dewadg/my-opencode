@@ -5,10 +5,11 @@ description: >
   ticket, an epic, a Figma flow — into tickets human engineers can pick up (backend, frontend,
   mobile, and the other seams: migrations, jobs, infra, analytics, admin), each sized in human
   working time (t-shirt), framed by business impact (via the business-impact skill), prioritized,
-  and sequenced. Also grooms an
-  existing backlog. Orchestrates: maps the codebase with code explorers, cuts tickets per seam,
-  writes each body with the ticket-description skill, and creates them via glab/gh only after
-  confirmation. Use whenever the user wants requirements or a ticket turned into multiple tickets —
+  and sequenced. Also grooms an existing backlog — when the user asks to groom a milestone, label,
+  epic, or ticket list — and, when the user asks you to write the tickets, creates them via glab/gh
+  only after confirmation. Orchestrates: maps the codebase with code explorers, cuts tickets per seam,
+  writes each body with the ticket-description skill, and creates them via glab/gh only after the
+  user confirms. Use whenever the user wants requirements or a ticket turned into multiple tickets —
   e.g. "break this down into tickets", "split #42", "this ticket is too big", "slice this PRD into
   BE/FE/mobile tickets", "estimate this feature", "which of these should we do first", "groom the
   backlog for milestone Q4", or loading the breakdown skill. Not for a single ticket's description
@@ -26,8 +27,13 @@ weaker on business framing. Carry the "why" and the ordering, and explain it in 
 
 **Input**: the user's request — a requirements file path or URL, a ticket/epic id or URL (GitLab `#42` /
 `group/project#42`, GitHub `#42`), or pasted text. May name projects.
-`--groom` — the target is a backlog (label, milestone, epic) to groom; see `references/grooming.md`.
-`--write` — create the tickets in the tracker after the user approves them.
+
+Two modes, both plain language — nothing here is a command-line flag:
+
+- **Grooming mode** — when the user asks to groom an existing backlog (a label, milestone, epic, or
+  list of ticket ids) rather than split one block; see `references/grooming.md`.
+- **Write mode** — when the user asks you to write the tickets into the tracker, which happens only
+  after they approve them.
 
 ## Reference files — read when you reach the step
 
@@ -36,7 +42,7 @@ weaker on business framing. Carry the "why" and the ordering, and explain it in 
 | `references/seams.md` | steps 4–5 |
 | `references/estimation.md` | step 6 |
 | `references/prioritization.md` | step 7 |
-| `references/grooming.md` | `--groom` only |
+| `references/grooming.md` | grooming mode only |
 | `references/tracker-cli.md` | steps 1 and 9, whenever touching the tracker |
 
 ## Workflow
@@ -137,18 +143,18 @@ expensive part, don't write 20 then rework them.
   part of a screen, a crop of that part. Each shot becomes a row of the ticket's **Design** section
   (ticket-description owns the table; design-shot supplies the rows, image embedded once uploaded).
 - Save bodies to the scratchpad (one file per ticket) so they can be passed by path.
-- `--write` → confirm first:
+- Write mode → confirm first:
   > "Create N tickets in <project>, linked to #<parent>? (parent description unchanged)"
   On explicit yes, create via `references/tracker-cli.md`, link to the parent, report every URL.
   Design screenshots upload with it (GitLab, via design-shot's upload step) — mention the image
   count in the confirmation.
   Updating the parent (child checklist) needs its own yes.
-- No `--write` → print bodies in fenced blocks and offer creation in one line.
+- Not write mode → print bodies in fenced blocks and offer creation in one line.
 
 ## Guardrails
 
-- Never write to the tracker without `--write` **and** an explicit yes; never overwrite an existing
-  description without separate confirmation.
+- Never write to the tracker unless the user asked you to write the tickets **and** gave an explicit
+  yes; never overwrite an existing description without separate confirmation.
 - Never invent requirements, metrics, deadlines, or sizes without a driver — trace to a source or
   mark unknown.
 - Estimates are human effort; never shrink a size because an AI could write the code faster.

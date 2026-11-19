@@ -111,6 +111,9 @@ node .opencode/skills/security-audit/validate-findings.cjs <run-dir>/findings.js
 node .opencode/skills/security-audit/validate-coverage-ledger.cjs <run-dir>/coverage-ledger.json
 ```
 
+After changing `report-schema.json` or either validator, run
+`node --test .opencode/skills/security-audit/*.test.cjs` (the tests load the real schema).
+
 Use the real skill directory when it lives elsewhere (for example under
 `~/.config/opencode/skills/security-audit/`). Fix every structural and semantic error before
 continuing. The findings validator rejects input beyond 5 MiB, 1,000 top-level findings, or 64 nesting

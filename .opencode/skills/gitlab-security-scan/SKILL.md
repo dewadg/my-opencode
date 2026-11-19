@@ -9,8 +9,8 @@ description: >-
   osv-scanner", "add Renovate", "show scan results in the Tests tab", or replicate
   an existing project's security pipeline into another GitLab repo. Also use to
   triage the first findings those jobs report. Not for GitHub Actions, not for a
-  one-off local security review of a diff (use code-reviewer), and not for
-  cutting releases (use glab-release).
+  one-off local security review of a diff (that is the code-review capability's job,
+  not this skill's), and not for cutting releases (use glab-release).
 ---
 
 # GitLab Security Scan
