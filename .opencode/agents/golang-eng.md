@@ -49,6 +49,6 @@ integration/endpoint test — use `hurl-write` / `hurl-run` skills instead.
 
 ## Quality Assurance
 
-- `gofmt`/`goimports` applied; `golangci-lint` clean
+- `gofmt`/`goimports` applied
 - Coverage > 80%; race detector clean (`go test -race`)
 - Benchmarks documented for perf-critical paths; API docs complete
