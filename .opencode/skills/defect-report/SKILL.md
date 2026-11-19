@@ -9,9 +9,9 @@ description: >
 
 ---
 
-Owns the finding-report format shared by `code-reviewer` and `qa-eng`. Every review or test run
-ends in this format so downstream agents and tooling can parse findings deterministically. No
-prose preamble, no praise filler, no "looks good".
+Owns the finding-report format shared by the review and QA agents (and any agent emitting findings).
+Every review or test run ends in this format so downstream agents and tooling can parse findings
+deterministically. No prose preamble, no praise filler, no "looks good".
 
 ## Severity tiers
 

@@ -10,7 +10,7 @@ description: >
 ---
 # Code
 
-Break coding instruction into tasks, orchestrate specialized subagents. Output: working, tested, reviewed code.
+Break coding instruction into tasks, orchestrate specialized subagents. Output: working code, verified against the project's own gates.
 
 **Input**: change description. May be ticket number, may name projects.
 
@@ -61,24 +61,20 @@ Break coding instruction into tasks, orchestrate specialized subagents. Output: 
       that mutates a shared resource inside one project: builds, full suites, dev servers,
       migrations, generated artifacts.
 
-   c. **Pipeline order — implement, full suite, review, behavioral QA last.** Each expensive
-      stage runs once, in this order. (1) The implementing subagent self-checks before reporting:
-      narrow build, lint, and unit tests for the packages it touched. (2) After every implementing
-      subagent in a project has finished, resume that project's last implementing subagent (its
-      saved `sessionID`) to run the full project build and suite once. (3) The batch review and
-      its bounded fix round (d–g below). (4) The QA agent runs behavioral verification once, on the
-      final reviewed code — endpoints via hurl, UI via browser, mobile via device. QA runs last on
-      purpose: review fixes cannot invalidate its evidence, and no fix round re-triggers a QA pass.
-      Unit-test suites and build pipelines are always the implementing agents' job; the QA agent
-      never runs them. Never two agents building or testing the same project; never behavioral
-      verification alongside an implementing agent in that project.
+   c. **Order the work, then close each unit.** Sequence tasks by dependency. What must pass before
+      a unit is done is the project's own call — its `AGENTS.md`, CI config, `Makefile` or scripts,
+      existing practice. Unless the project defines its own gates, the default is: the implementing
+      subagent self-checks narrow (build, lint, unit tests for what it touched), then runs the
+      project build and suite once; then one batch review with a fix round bounded at two passes;
+      then behavioral verification last. Two agents never build or test the same project
+      concurrently; the implementing subagent runs builds and suites, never the QA agent.
 
-   d. **No review until every implementing subagent finished.** Independent tasks run parallel; each
-      subagent pauses when done. Review is batch-level, never per-subagent or per-project — separate
-      reviews burn duplicate rounds and miss cross-boundary mismatches (frontend calling backend
-      contract).
+   d. **Batch every review.** Independent tasks run parallel; each subagent pauses when done. When
+      the project defines a review convention, follow it; otherwise review is batch-level, never
+      per-subagent or per-project — separate reviews burn duplicate rounds and miss cross-boundary
+      mismatches (frontend calling backend contract).
 
-   e. **One review pass: single `code-reviewer` subagent, single invocation, scope not payload.**
+   e. **One review pass: a single review-agent subagent, single invocation, scope not payload.**
       The brief carries each repo root, the output of `git diff --stat`, the acceptance criteria
       reference, an exclusion list, and an instruction to run `git diff` itself. NEVER paste diff
       text into a brief. Exclusion list, unless the excluded file is itself the change's source of
@@ -91,34 +87,34 @@ Break coding instruction into tasks, orchestrate specialized subagents. Output: 
       saved `sessionID` back to the `subagent` tool with the findings verbatim, each its slice only),
       not fresh spawns — resumed agents apply fixes from context already held. Fixes for different
       projects run parallel; same-project findings go to that project's agent in one message. Each
-      fix self-checks narrow — no full-suite rerun for review fixes unless a fix crosses package
-      boundaries, and then the project's last implementing agent reruns the full suite once, alone.
+      fix self-checks narrow — by default no full-suite rerun for review fixes unless a fix crosses
+      package boundaries, and then the project's last implementing agent reruns the full suite once.
 
-   g. All fixes in: re-review the full combined diff once, same way. Bound at two rounds total —
-      findings survive the second pass, stop, bring to user.
+   g. All fixes in: re-review the full combined diff once, same way; when the project defines no
+      review convention, bound it at two rounds — findings surviving the second pass stop and come to
+      the user.
 
-   h. **QA pass, once, after the review loop closes.** One brief to one QA subagent covering every
-      touched project: behavioral verification on the running app against the acceptance criteria.
-      QA defects loop back exactly like review findings — resume the project's implementing agent
-      with the defect verbatim, it fixes and narrow re-checks, then the QA agent re-verifies only
-      the failed scenarios, never the whole pass. Reuse the same QA session for the re-verification
-      round: brief it with the failed scenario IDs only, not the whole pass and not a fresh full
-      brief. Defects surviving one fix round: stop, bring to user.
+   h. **Behavioral verification, where the project calls for it, once, last.** One brief to one QA
+      subagent covering every touched project: verification on the running app against the acceptance
+      criteria. QA defects loop back exactly like review findings — resume the project's implementing
+      agent with the defect verbatim, it fixes and narrow re-checks, then the QA agent re-verifies
+      only the failed scenarios, never the whole pass. Reuse the same QA session for the
+      re-verification round: brief it with the failed scenario IDs only, not the whole pass and not a
+      fresh full brief. Defects surviving one fix round: stop, bring to user.
 
    i. **If something genuinely unclear**: use the **`question` tool** to clarify, then continue.
 
 ## Choosing subagents
 
-No fixed roster — pick from the agent definitions in `.opencode/agents/` and
-`~/.config/opencode/agents/`, so a new agent works without a skill change. Enumerate once per session
-with `glob` over `.opencode/agents/*.md` and `~/.config/opencode/agents/*.md`; keep the result in the
-plan, re-list only if the directories change.
+No fixed roster — pick from the agent definitions OpenCode loads from the project and global config,
+so a new agent works without a skill change. Enumerate once per session with `glob` over those config
+directories' agent definitions; keep the result in the plan, re-list only if the config changes.
 
 Route by capability, not name: backend → that language's engineering agent; web frontend → that
 framework's engineering agent; test strategy, E2E, browser verification → QA / UI testing agent;
 review of a produced diff → code review agent; containers, compose, images → container agent; schema,
 migrations, query performance → database agent; cross-cutting design → architecture review agent.
-Most specific fit wins; none fits → the built-in `general` subagent.
+Most specific fit wins; none fits → a general-purpose subagent.
 
 One subagent per project per task — two agents editing the same project concurrently conflict.
 Independent projects run parallel.
@@ -169,20 +165,20 @@ existing directory when resuming or continuing the same change; never create a s
 Suffix `-2` only when an unrelated change already took the name. Artifact names inside are fixed, and
 `related:` entries are sibling-relative — never workspace-relative.
 
-- `<session dir>/<stem>-journal.md` — the note, `note-write` frontmatter; coordinator only.
+- `<session dir>/<stem>-journal.md` — the note, `note-write` frontmatter; the orchestrator only.
 - `<session dir>/recon-{project}.md` — the read-only explorer, one per project.
 - `<session dir>/evidence-{project}-{agent}.md` — that subagent, its own path.
-- `<session dir>/review-round-{n}.md` — coordinator, only when a round yields more than ~40 findings
+- `<session dir>/review-round-{n}.md` — orchestrator only, when a round yields more than ~40 findings
   (the `defect-report` size rule).
 - `<session dir>/assets/` — screenshots, hurl files, raw logs.
 
 One writer per file; parallel implementers write separate evidence files. The ~15-line cap is on the
-message back to the coordinator, never on the record — commands, exit codes, failure log, and files
+message back to the orchestrator, never on the record — commands, exit codes, failure log, and files
 touched go to the subagent's evidence file. The journal is append-only; only `State` cells and the
 `updated:` date change in place. IDs: `D<n>` decisions, `R<round>.F<n>` review findings, `Q<n>` QA
-defects. Write at four checkpoints — plan, implementation closed, review closed, QA closed — and read
-at resume boundaries (a context break, a new session) and before the final report, not every round.
-`.notes/` is outside review scope; it goes in the reviewer exclusion list.
+defects. Write at natural boundaries — when the plan is set, when a unit closes, when the change set
+closes — and read at resume boundaries (a context break, a new session) and before the final report,
+not every round. `.notes/` is outside review scope; it goes in the reviewer exclusion list.
 
 ```markdown
 ---
@@ -198,9 +194,13 @@ description: <change> — session journal
 status: shipped | partial | blocked
 
 ## Status
+`Status` is per change unit — append a row per unit, never overwrite.
 | Task | Project | Owner | State | Evidence |
 |---|---|---|---|---|
 | T1 | <project> | <agent> | done | evidence-<project>-<agent>.md |
+## Applies
+| # | Change unit | Date | ses_ | Result | Commits |
+|---|---|---|---|---|---|
 ## Decisions
 | # | Decision | Rejected | Why | `ses_` |
 |---|---|---|---|---|
@@ -240,24 +240,23 @@ turn count, not report length, dominate the bill.
 - Escalate cheaply: `git diff --stat` before `git diff`, `--name-only` before per-file diffs,
   `head`/`tail` on logs, `--filter`/`-q` on noisy commands. Narrow the command, not the answer.
 - Never echo tool output into the reply or re-read a file you just wrote. Cite `path:line`; the
-  coordinator reads what it needs.
+  orchestrator reads what it needs.
 - Reports and briefs stay as specified — the message cap is not an excuse to move cost into calls.
 
 ## Verifying
 
-You verify the returned work; you never reproduce it.
+Verify the returned work by reading; never reproduce it.
 
-- Every claim cites the `sessionID` of the subagent that produced it. A claim you cannot
-  attribute did not happen.
-- Check claims by reading, cheaply: `grep`/`glob` to locate, `read` with `offset`/`limit` on the
-  changed region only, `git diff --stat` before `git diff` — never whole files.
-- Every criterion in the brief maps to a reported result; commands carry exit codes.
-- Missing or contradicted evidence: report the gap, or resume that same subagent asking for the gap
-  in at most ~5 lines — never run the build, tests, or browser yourself.
-- A thin report: read its evidence file before resuming — resume only if the file does not answer it.
-- Full build/suite/QA sequencing lives in `coordinator.md` and step 4c above.
-
-No commit, push, tag, or PR unless user asked.
+- Every claim cites the `sessionID` of the subagent that produced it; an unattributable claim did
+  not happen.
+- Check claims cheaply: `grep`/`glob` to locate, `read` with `offset`/`limit`, `git diff --stat`
+  before `git diff`.
+- Every criterion in the brief maps to a reported result, and commands carry exit codes.
+- A missing or contradicted item is a gap: report it, or request it from that same subagent in ~5
+  lines — never close it by running the build, tests, or browser.
+- A project's suite run, where it has one, is attributed to the implementing subagent that ran it.
+- Publication stops at the rung the user named for the run; unstated, commit on the branch. Pushing,
+  PRs, merges and shared-environment changes need the user's naming or a recorded project convention.
 
 ## Output
 
@@ -266,7 +265,7 @@ All tasks done, report back in chat:
 - Verification status per task: evidence present, missing, or contradicted
 - Test and build results as reported by the subagent that ran them — quote failures, exit codes
 - Anything undone, deferred, knowingly out of scope
-- Follow-ups user must action (migration to run, config or env var to set, deploy order across repos)
+- Follow-ups user must action (migration to run, config or env var to set, rollout order across repos)
 
 ## Guardrails
 

@@ -76,8 +76,8 @@ creating files or starting the complete workflow.
 
 ## Orchestration
 
-The workflow runs in the **main thread**, under `coordinator`, which plans, briefs, and verifies
-returned reports. It has to: OpenCode nesting depth is one, so a subagent cannot spawn a subagent.
+The workflow runs in the **main thread**, under whichever primary is active, which plans, briefs,
+and verifies returned reports. It has to: OpenCode nesting depth is one, so a subagent cannot spawn a subagent.
 Every hunter, coverage critic, and verifier is exactly one `subagent` call from the main thread and
 gets a fresh session.
 
@@ -90,7 +90,7 @@ records terminal state (b) under Cost budget. Guidance-mode reads need no such g
 - **Route by capability, not by name.** A read-only tracing agent for narrow source traces; a
   general investigator for broad multi-file sweeps; a security-review agent for boundary judgement
   and independent verification; the language engineer for stack semantics the trace depends on.
-  (The repo's roster lives in `.opencode/agents/`; pick by the capability each brief needs.)
+  (The roster is whatever agents OpenCode loads; pick by the capability each brief needs.)
 - **Independence is session freshness.** The session that verifies a finding is never the session
   that found it. Use a distinct `subagent` call and never reuse a hunter's session for verification.
 - **The parent owns the shared files.** Only the main-thread agent writes the report note,

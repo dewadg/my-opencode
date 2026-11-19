@@ -1,6 +1,6 @@
 ---
 description: Scope a new feature or change across one or more projects before building it — break the analysis into delegated tasks and compile the results into a note.
-agent: coordinator
+agent: tech-lead
 ---
 
 # Analyze

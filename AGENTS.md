@@ -24,7 +24,7 @@ curated subset, not a mirror.
 ## Layout
 
 - `.opencode/agents/*.md` — one agent per file. Frontmatter + system prompt. Every agent is a
-  subagent except `coordinator.md`, the primary the orchestrators run in.
+  subagent except `tech-lead.md`, the primary the orchestrators run in.
 - `.opencode/commands/*.md` — one user-invoked slash command per file. Frontmatter (`description`,
   optional `agent`, `model`, `subagent`) + prompt body. `$ARGUMENTS` expands to the text after the
   command name, `$1`/`$2` to positional arguments, and `` !`shell` `` injects command output. The
@@ -147,30 +147,40 @@ still depend on `note-write`/`note-search` for file mechanics). They deliberatel
 an agent roster — they route by capability ("a service backend → the engineering agent for that
 language") so that adding an agent to `.opencode/agents/` makes it usable without editing any command
 or skill. Preserve that indirection; do not introduce agent-name lists into commands or skills.
-All three run under `coordinator` (set by `agent:` frontmatter on the commands, and by
+All three run under the primary `tech-lead` (set by `agent:` frontmatter on the commands, and by
 `default_agent` in `opencode.json`), which is why the delegation contract below binds them.
 `analyze` and `investigate` also share a code-flow contract: when they explain how code flows, they
 render it with the `call-graph` skill (indented arrow tree), never prose — so changes to the
 `call-graph` output format affect what those commands emit.
 
-**Coordination.** `coordinator.md` is the primary that does not build: it plans, briefs, and verifies
-returned reports. Its role is prompt-enforced, not permission-enforced — it keeps `edit`, `shell`,
-and the browser MCP tools, so nothing structurally stops it from taking a subagent's work; what
-binds it is the evidence-attribution rule (every claim cites a subagent `sessionID`) and the
-`code` skill's verification contract. Verification splits along the builder/QA line: the
-implementing subagent owns all build and test-script execution — a narrow build/lint/unit
-self-check for the packages it touched, then the full project build and suite **once** per
-project, run by resuming that project's last implementing subagent after the others finish. The
-QA agent owns only behavioral verification on the running app (endpoints via hurl, browser/mobile
-flows from the user's point of view), never runs unit-test suites, and runs **once**, last, after
-the review loop closes — so fix rounds never re-trigger it, and QA defects loop back to the
-implementing agents with only the failed scenarios re-verified. One full run per project at
-a time — concurrent full builds collide on the test database, dev-server port, and build output.
-If `qa-eng`'s tier-2 section, the `code` skill's Verifying section, or `coordinator.md`'s clauses
+**Coordination.** `tech-lead.md` is the primary that does not produce the product: it plans,
+briefs, verifies returned reports, and publishes repo state (git history, remotes, PR/MR) inline;
+it never runs builds or tests, or drives browser/device. Its role is prompt-enforced, not
+permission-enforced — it keeps `edit`, `shell`, and the browser MCP tools, so nothing structurally
+stops it from taking a subagent's work; what binds it is the evidence-attribution rule (every claim
+cites a subagent `sessionID`) and the `code` skill's verification contract. That split — reversible
+git/PR actions inline, destructive ones only on the user's explicit ask, adds by explicit path and
+never `git add -A` — is also prompt-enforced, and it binds the `code` skill's rule that publication
+stops at the rung the user named for the run (unstated: commit on the branch), with the tech lead
+owning publication; change them together. The workflow statements are layered: invariants (rung,
+autonomy, attribution, one agent per project) bind everywhere, while stage sequences, suite commands,
+review steps and environment checks are defaults applied only where a project defines no convention —
+so project rituals are discovered from its own `AGENTS.md`, README and CI config during recon, never
+assumed, and an undiscoverable convention is asked once and journaled as a decision. Verification
+splits along the builder/QA line: the implementing subagent owns all build and test-script execution —
+by default a narrow build/lint/unit self-check for the packages it touched, then the full project
+build and suite **once** per project, run by resuming that project's last implementing subagent after
+the others finish. The QA agent owns only behavioral verification on the running app (endpoints via
+hurl, browser/mobile flows from the user's point of view), never runs unit-test suites, and by default
+runs **once**, last, after the review loop closes — so fix rounds never re-trigger it, and QA defects
+loop back to the implementing agents with only the failed scenarios re-verified. One full run per
+project at a time — concurrent full builds collide on the test database, dev-server port, and build
+output.
+If `qa-eng`'s tier-2 section, the `code` skill's Verifying section, or `tech-lead.md`'s clauses
 change, change the other two with them. Briefs carry scope, not payload — no pasted diffs — and
-reports are capped and point at evidence paths, so the coordinator's context stays bounded across
+reports are capped and point at evidence paths, so the tech lead's context stays bounded across
 rounds; `defect-report`'s size rules and `code`'s briefing cap move together — change one, change
-the other. `code`'s Tool-output discipline, `coordinator.md`'s reading rule, and `qa-eng`'s context
+the other. `code`'s Tool-output discipline, `tech-lead.md`'s reading rule, and `qa-eng`'s context
 discipline express one premise — tool output and turn count dominate cost — so change them together.
 
 **Breakdown.** The `breakdown` skill orchestrates in the main thread (it must — it spawns
@@ -213,6 +223,11 @@ the same session-directory rule: one stem, sibling-relative `related`, archive b
 artifacts under `.opencode/`; MCP server names in prose must match keys in `opencode.json`
 (`opencode.example.json` is the template). Renaming a skill, agent, or server means grepping the
 whole repo for the old name.
+
+**Skill portability.** Dependencies point one way: an agent may reference a skill, a skill may
+reference another skill, and a skill must never reference an agent file or require a specific agent —
+a skill is invoked under whatever primary is active. Capability phrases are how a skill names a
+collaborator.
 
 ## Commits
 

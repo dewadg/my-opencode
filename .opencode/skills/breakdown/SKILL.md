@@ -84,12 +84,13 @@ Identify the projects behind each seam (backend, web, mobile, infra) and read ea
 `AGENTS.md` (or legacy `CLAUDE.md`). Greenfield → skip mapping, mark sizes as greenfield.
 
 **Scale fan-out to scope — tokens are the budget.** One small project → inventory inline with
-`read`/`grep`/`glob`. Several projects or a large surface → spawn **`code-diver`** once per project, in
-parallel, with the seam brief from `references/seams.md` (endpoint inventory for BE, screen and
-shared-component inventory for FE/mobile, etc.). Ask for `file:line` tables, not prose. Stop at
-inventory — what exists, what's reusable, what's touched — not implementation design.
+`read`/`grep`/`glob`. Several projects or a large surface → spawn one **read-only code-mapping
+subagent** per project, in parallel, with the seam brief from `references/seams.md` (endpoint
+inventory for BE, screen and shared-component inventory for FE/mobile, etc.). Ask for `file:line`
+tables, not prose. Stop at inventory — what exists, what's reusable, what's touched — not
+implementation design.
 
-When code-diver flags `→ needs <specialist>`, spawn that specialist only for that finding, passing
+When that subagent flags `→ needs <specialist>`, spawn that specialist only for that finding, passing
 the tree.
 
 ### 5. Cut tickets per seam

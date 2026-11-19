@@ -34,7 +34,7 @@ threat modelling — loads the `skill` tool with id `security-audit` and stays i
 relevant part only, no run directory, no artifacts.
 
 Full audit mode needs `subagent` to spawn hunters, coverage critics, and verifiers, so it runs on the
-main thread under `coordinator`. This agent may serve as an independent verifier when a main-thread
+main thread under the tech lead. This agent may serve as an independent verifier when a main-thread
 audit calls it; never confirm a candidate it hunted, and never confirm a record that lacks a fresh
 independent verifier.
 

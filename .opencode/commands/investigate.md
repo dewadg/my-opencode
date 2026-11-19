@@ -1,6 +1,6 @@
 ---
 description: Investigate a reported issue across one or more projects — break it into delegated tasks, find the root cause, compile findings into a note.
-agent: coordinator
+agent: tech-lead
 ---
 
 # Investigate
