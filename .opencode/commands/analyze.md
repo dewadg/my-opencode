@@ -1,5 +1,8 @@
 ---
-description: Scope a new feature or change across one or more projects before building it — break the analysis into delegated tasks and compile the results into a note.
+description: >-
+  Scope a new feature or change across projects before building it; compile delegated analysis into
+  a note. Not for diagnosing a reported failure (use `/investigate`) or implementing (use the `code`
+  skill).
 agent: tech-lead
 ---
 
@@ -78,7 +81,7 @@ number, and may name the related projects.
 Whenever you explain how code flows — how a feature works today, a request's path, a call chain,
 a struct's methods and what they call — render it with the **`call-graph` skill** (`skill` tool, id
 `call-graph`), not prose. Emit its indented arrow tree (one node per call hop, each carrying
-`file:line`). This applies whether you trace inline or hand off to `code-diver`:
+`file:line`). This applies whether you trace inline or hand off to the read-only explorer agent:
 
 - The note's **Current state** section anchors on these trees/tables.
 - The note's **Flow diagram** uses the call-graph tree for code call paths. (A mermaid
@@ -100,20 +103,21 @@ them with:
 ls .opencode/agents ~/.config/opencode/agents 2>/dev/null
 ```
 
-**Default for code reading: spawn `code-diver`.** It returns call-graph trees and file:line tables
-that anchor the **Current state** and **Impact map** sections — trace how a feature works today, map
-a struct's methods, find call sites, scope touched files. Routing rules:
+**Default for code reading: the read-only explorer agent** — pick the one whose description is
+read-only exploration. It returns call-graph trees and file:line tables that anchor the **Current
+state** and **Impact map** sections — trace how a feature works today, map a struct's methods, find
+call sites, scope touched files. Routing rules:
 
-- **code-diver flag.** On a stack-semantic gap (concurrency, framework lifecycle, ORM behavior) it
+- **Explorer flag.** On a stack-semantic gap (concurrency, framework lifecycle, ORM behavior) it
   flags `→ needs <specialist>`. Spawn that specialist for just that finding.
 - **Smart-skip.** Request already semantic (thread-safety, reactivity, ORM/query, framework
-  internals) → skip code-diver, spawn the specialist directly.
-- **Pass the tree.** Escalating from a flag → hand code-diver's tree/table into the specialist
+  internals) → skip the explorer, spawn the specialist directly.
+- **Pass the tree.** Escalating from a flag → hand the explorer's tree/table into the specialist
   spawn as context; it does only the semantic step, no re-trace.
 
 Route the rest by capability: schema and migrations to the database agent, cross-cutting design to
 the architecture review agent, test strategy to the QA agent. Reach for a language engineering agent
-only when the analysis needs stack-specific depth code-diver cannot provide (concurrency-safety
+only when the analysis needs stack-specific depth an explorer cannot provide (concurrency-safety
 review, framework internals). If several fit, pick the most specific. If none fits, use the built-in
 `general` subagent.
 

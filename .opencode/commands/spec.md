@@ -1,5 +1,8 @@
 ---
-description: Spec out a change end-to-end into a build-ready specs/{slug}.md before any code — research (fan out investigator subagents when the scope earns it), commit to decisions, then load the spec-write skill to format the file.
+description: >-
+  Spec a change into a build-ready specs/{slug}.md before code. Not for implementing an
+  already-decided change (use the `code` skill) or open-ended impact analysis with no committed plan
+  (use `/analyze`).
 agent: tech-lead
 ---
 
@@ -46,14 +49,15 @@ name, or prose.
 
    Fan out parallel investigators only when the change is genuinely large or spans multiple projects —
    touches many files, crosses package/repo boundaries, or has unknowns several focused reads resolve
-   faster in parallel. Spawn one **`code-diver`** per project/subsystem with the `subagent` tool; each
-   returns a call-graph tree or file:line table of how the touched code works today, then synthesize.
-   Subagents cannot spawn other subagents, so the main thread launches every investigator directly.
-   Routing rules for a code-diver finding: on a `→ needs <specialist>` flag (stack-semantic gap),
-   spawn that specialist for just that finding and **pass code-diver's tree** into the spawn as
-   context (semantic step only, no re-trace); **smart-skip** code-diver entirely for areas already
-   known to need semantic depth (thread-safety, reactivity, ORM/query, framework internals) — spawn
-   the specialist direct. See "Choosing subagents" for the full routing. If you fan out, say so
+   faster in parallel. Spawn one read-only explorer agent — the one whose description is read-only
+   exploration — per project/subsystem with the `subagent` tool; each returns a call-graph tree or
+   file:line table of how the touched code works today, then synthesize. Subagents cannot spawn other
+   subagents, so the main thread launches every investigator directly. Routing rules for an explorer
+   finding: on a `→ needs <specialist>` flag (stack-semantic gap), spawn that specialist for just that
+   finding and **pass the explorer's tree** into the spawn as context (semantic step only, no
+   re-trace); **smart-skip** the explorer entirely for areas already known to need semantic depth
+   (thread-safety, reactivity, ORM/query, framework internals) — spawn the specialist direct. See
+   "Choosing subagents" for the full routing. If you fan out, say so
    briefly so the user knows the cost.
 
    Draft the **Testing** section inline (pre-test requirements + scenario table, per the spec-write
@@ -87,7 +91,7 @@ skill** (`skill` tool, id `call-graph`): indented arrow tree, one node per call 
 `file:line`. Not prose, not an arrow-crammed one-liner.
 
 - The research step (how it works today) anchors on these trees, whether you trace inline or receive
-  them from `code-diver`.
+  them from an explorer agent.
 - The spec's **Flow** section uses the call-graph tree for code call paths; a mermaid diagram stays
   right for cross-service request/data flow, component interaction, or state transitions. Pick by
   what is shown — a code call path is always the tree.
@@ -104,27 +108,28 @@ them with:
 ls .opencode/agents ~/.config/opencode/agents 2>/dev/null
 ```
 
-**Research investigators.** Default for code reading: spawn `code-diver` — it returns the call-graph
-trees and file:line tables that anchor the "how it works today" research. Routing rules:
+**Research investigators.** Default for code reading: the read-only explorer agent — the one whose
+description is read-only exploration — returns the call-graph trees and file:line tables that anchor
+the "how it works today" research. Routing rules:
 
-- **code-diver flag.** On a stack-semantic gap (concurrency, framework lifecycle, ORM behavior) it
+- **Explorer flag.** On a stack-semantic gap (concurrency, framework lifecycle, ORM behavior) it
   flags `→ needs <specialist>`. Spawn that specialist for just that finding.
 - **Smart-skip.** Request already semantic (thread-safety, reactivity, ORM/query, framework internals)
-  → skip code-diver, spawn the specialist directly.
-- **Pass the tree.** Escalating from a flag → hand code-diver's tree/table into the specialist spawn
-  as context; it does only the semantic step, no re-trace.
+  → skip the explorer, spawn the specialist directly.
+- **Pass the tree.** Escalating from a flag → hand the explorer's tree/table into the specialist
+  spawn as context; it does only the semantic step, no re-trace.
 
 **Todo-wave owners.** When filling the spec's dependency-wave todo, name the single agent that owns
 each task by capability, not by hardcoded roster:
 
-- Service / backend: engineering agent for that language (`golang-eng`, `js-eng`, …)
-- Web frontend: framework agent (`vue-eng`, `react-eng`, …)
-- Test strategy, E2E, browser verification: `qa-eng`
-- Review of any produced diff: `code-reviewer`
-- Containers, compose, images: `docker-eng`
-- Schema, migrations, query performance: `db-admin`
-- Cross-cutting design / architecture: `architect-reviewer`
-- None fits: the built-in `general` subagent
+- Service / backend: the engineering agent for that language
+- Web frontend: the framework agent for that stack (Vue, React, …)
+- Test strategy, E2E, browser verification: the QA capability
+- Review of any produced diff: the review capability
+- Containers, compose, images: the container capability
+- Schema, migrations, query performance: the database capability
+- Cross-cutting design / architecture: the architecture review capability
+- None fits: the built-in general subagent
 
 One subagent per project per task — two agents editing the same project concurrently conflict.
 Independent projects (or independent files in one project) can share a wave.

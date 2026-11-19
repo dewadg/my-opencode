@@ -1,5 +1,8 @@
 ---
-description: Investigate a reported issue across one or more projects — break it into delegated tasks, find the root cause, compile findings into a note.
+description: >-
+  Investigate a reported issue across one or more projects — find the root cause and compile findings
+  into an RCA note. Not for scoping a new feature (use `/analyze`) or implementing a fix (use the
+  `code` skill).
 agent: tech-lead
 ---
 
@@ -80,7 +83,7 @@ related projects.
 Whenever you explain how code flows — the path from entry point to the defect, a suspect function's
 calls, who calls a symbol, a request's journey through layers — render it with the **`call-graph`
 skill** (`skill` tool, id `call-graph`), not prose. Emit its indented arrow tree (one node per call
-hop, each carrying `file:line`). This applies whether you trace inline or hand off to `code-diver`:
+hop, each carrying `file:line`). This applies whether you trace inline or hand off to the read-only explorer agent:
 
 - The note's **Evidence** section anchors on these trees/tables — the code path from entry to defect
   is the tree.
@@ -103,20 +106,21 @@ them with:
 ls .opencode/agents ~/.config/opencode/agents 2>/dev/null
 ```
 
-**Default for code reading: spawn `code-diver`.** It returns call-graph trees and file:line tables
-that anchor the **Evidence**, **Root cause**, and **Blast radius** sections — trace entry → defect,
-map a suspect function's calls, list callers of the buggy symbol. Routing rules:
+**Default for code reading: the read-only explorer agent** — pick the one whose description is
+read-only exploration. It returns call-graph trees and file:line tables that anchor the **Evidence**,
+**Root cause**, and **Blast radius** sections — trace entry → defect, map a suspect function's calls,
+list callers of the buggy symbol. Routing rules:
 
-- **code-diver flag.** On a stack-semantic gap (concurrency, framework lifecycle, ORM behavior) it
+- **Explorer flag.** On a stack-semantic gap (concurrency, framework lifecycle, ORM behavior) it
   flags `→ needs <specialist>`. Spawn that specialist for just that finding.
 - **Smart-skip.** Symptom already points at a semantic cause (race, reactivity, ORM/query,
-  framework lifecycle) → skip code-diver, spawn the specialist directly.
-- **Pass the tree.** Escalating from a flag → hand code-diver's tree/table into the specialist
+  framework lifecycle) → skip the explorer, spawn the specialist directly.
+- **Pass the tree.** Escalating from a flag → hand the explorer's tree/table into the specialist
   spawn as context; it does only the semantic diagnosis, no re-trace.
 
 Route the rest by capability: reproduction and E2E to the QA or UI testing agent, schema and query
 performance to the database agent. Reach for a language engineering agent only when the trace needs
-stack-specific depth code-diver cannot provide. If several fit, pick the most specific. If none fits,
+stack-specific depth an explorer cannot provide. If several fit, pick the most specific. If none fits,
 use the built-in `general` subagent.
 
 ## Output
