@@ -30,7 +30,7 @@ mode, permissions, optional model/color) plus a system prompt. The filename is t
 | `api-documenter` | API docs, OpenAPI specs, doc portals, generated code examples |
 | `architect-reviewer` | System design decisions, architectural patterns, technology choices |
 | `code-reviewer` | Code quality, security vulnerabilities, best practices |
-| `code-diver` | Read-only codebase exploration — trace call flow (call-graph tree), locate symbols (file:line table); spawned by `analyze`/`investigate`/`spec` for code reading, escalates to a specialist on a stack-semantic gap |
+| `code-diver` | Read-only codebase exploration — trace call flow (call-graph tree), locate symbols (file:line table); spawned by the `analyze` and `investigate` commands for code reading, escalates to a specialist on a stack-semantic gap |
 | `compliance-auditor` | GDPR / CCPA obligations, data practices, privacy gaps |
 | `db-admin` | Query performance, HA architecture, disaster recovery |
 | `docker-eng` | Designing, building, running, optimizing containers |
@@ -59,37 +59,28 @@ These agents are from [awesome-claude-code-subagents](https://github.com/VoltAge
 
 ## Commands
 
-User-invoked slash commands. Run as `/analyze`, `/investigate`, `/spec`.
+User-invoked slash commands. Run as `/analyze` or `/investigate`.
 
 | Command | Use for | Not for |
 |---|---|---|
 | `analyze` | Scoping a feature or change across projects before building it | Diagnosing a bug (`/investigate`); writing the code (`code` skill) |
 | `investigate` | Finding the root cause of something broken | Scoping a new feature (`/analyze`); writing the fix (`code` skill) |
-| `spec` | Spec out a change end-to-end into a build-ready `specs/{slug}.md` — orchestrates research + decisions, delegates the file format to the `spec-write` skill | Implementing decided work (`code` skill); open-ended impact analysis (`/analyze`) |
 
-All three delegate code reading to `code-diver` and, when explaining code flow, render it with the
+Both delegate code reading to `code-diver` and, when explaining code flow, render it with the
 `call-graph` skill (indented arrow tree, one node per call hop) rather than prose. Commands run in
-the current session unless their frontmatter sets `subagent: true`; all three keep orchestration in
+the current session unless their frontmatter sets `subagent: true`; both keep orchestration in
 the main thread because OpenCode subagents cannot spawn other subagents.
 
 ## Skills
-
-### Planning
-
-| Skill | Use for | Not for |
-|---|---|---|
-| `spec-write` | The spec file FORMAT — frontmatter schema, section template, lean principles, search recipes; auto-fires on spec-writing intent, also driven by the `/spec` command | Implementing decided work (`code` skill); diagnosing a bug (`/investigate`); archiving a done spec (`spec-archive`) |
-| `spec-archive` | Move a shipped or abandoned spec to `specs/archives/` after finalizing its status — triggered by "archive the spec", "/spec archive", or any shelving intent | Writing/formatting a spec (`spec-write`); implementing the todo (`code` skill) |
 
 ### Orchestrators
 
 `analyze` and `investigate` (commands, above) and `code` (skill, below) share one shape: plan the
 work as a checklist, delegate every project-level unit to a subagent via the `subagent` tool,
 compile the result into a note. They route to agents by capability rather than by name, so adding
-an agent to `.opencode/agents/` makes it usable without touching the command or skill. `spec`
-(command, above) shares the same delegation shape but compiles into a spec file via the
-`spec-write` skill rather than a note. For code reading and tracing they spawn `code-diver` by
-default, escalating to a language specialist only when `code-diver` flags a stack-semantic gap
+an agent to `.opencode/agents/` makes it usable without touching the command or skill. For code
+reading and tracing they spawn `code-diver` by default, escalating to a language specialist only
+when `code-diver` flags a stack-semantic gap
 (`→ needs <specialist>`) — `smart-skip` sends semantic-flavored requests straight to the
 specialist, `pass-tree` hands `code-diver`'s output to it so the specialist does only the semantic
 step.

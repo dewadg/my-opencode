@@ -9,8 +9,7 @@ description: >
   hands off findings. This skill formats and writes the note only — it does NOT fan out investigator
   subagents or drive the investigation; for an issue needing multi-project research, the /investigate
   command orchestrates the investigators first, then calls this skill to compile the result. Do NOT
-  use for: scoping a new feature (use /analyze), writing a spec (use spec-write), or generic notes
-  (use note-write).
+  use for: scoping a new feature (use /analyze), or generic notes (use note-write).
 
 ---
 # RCA note

@@ -92,8 +92,9 @@ metadata:
 
 Descriptions carry the routing burden — they are how OpenCode decides to advertise a skill. Write
 them with concrete trigger phrases and, where a sibling skill overlaps, an explicit exclusion (see
-`spec-write` vs `code`, which disambiguate each other in their own descriptions). The same applies to
-command `description` frontmatter — `analyze` and `investigate` exclude each other and `code`.
+`note-write` vs `note-search`, which disambiguate each other in their own
+descriptions). The same applies to command `description` frontmatter — `analyze` and
+`investigate` exclude each other and `code`.
 
 Claude Code skill fields (`allowed-tools`, `argument-hint`, `effort`) are not OpenCode V2 fields —
 do not use them.
@@ -128,17 +129,6 @@ single writer, and `tech-lead.md` owns the journal's path and skeleton —
 `.notes/code/{YYYY}-{MM}-{DD}[-{TICKET}]-{slug}/` with the same-stem `-journal.md` inside, archived by
 one `mv` to `.notes/code/archive/`. One writer per file; the report cap bounds the message back, never
 the record.
-
-**Specs.** The `spec-write` skill (driven explicitly by the `/spec` command, auto-fired by its own
-description) writes single-file specs at `specs/{slug}.md` (live); the `spec-archive` skill moves
-shipped or abandoned ones to `specs/archives/{YYYY-MM-DD}-{slug}.md`. Each spec carries frontmatter
-`status` (`draft` | `in-progress` | `shipped` | `abandoned`), `created`, `updated`, `tags`,
-`projects`, `ticket`, `related`, `description` — `tags`/`projects`/`created`/`updated`/`related`/
-`description` match the note schema deliberately. `spec-write`'s **Search** job greps these exact
-fields and awk-extracts the frontmatter block only, so look-back never reads a spec body.
-`spec-archive` finalizes only `status` and `updated` — the rest of the schema must stay intact so
-Search still routes. If the spec frontmatter schema changes, those grep recipes and the template's
-frontmatter block must change with it.
 
 **Orchestrators.** The `analyze` and `investigate` commands and the `code` skill share one
 architecture: plan the work as a checklist, delegate every project-level unit of work to a subagent

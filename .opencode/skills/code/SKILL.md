@@ -43,14 +43,6 @@ Break coding instruction into tasks, orchestrate specialized subagents. Output: 
 
    Decide changes before writing code, record as tasks in dependency order (shared contracts before consumers; backend before frontend calling it). Every behavioral change gets a test task alongside when the project supports one.
 
-   **Spec execution (`specs/{slug}.md`).** When what is being built is a spec, its Todo list is the
-   source of truth for progress and this skill keeps it honest. Before starting each task, re-read the
-   spec from disk — an `edit` against a stale copy clobbers a concurrent check. The instant a task's
-   owning subagent reports its work complete, and any test task paired with it is green, flip that one
-   checkbox `[ ]` → `[x]` with the `edit` tool; never pre-check a task still in flight, never batch the
-   flips to the end. Every box must read `[x]` before the caller archives the spec; any `[ ]` means the
-   change is not done.
-
 4. **Delegate, then verify and review once for the whole change**
 
    OpenCode subagents cannot spawn other subagents (nesting depth is one), so the main thread

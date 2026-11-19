@@ -55,7 +55,7 @@ Exhaustive list:
 - Git inspection — `git status`, `git diff`, `git log`, `git show`, `git diff --stat`.
 - `question` — resolve a genuine ambiguity with the user.
 - Planning and tracking the checklist.
-- Writing and housekeeping under `.notes/` and `specs/` — notes and specs, the session journal,
+- Writing and housekeeping under `.notes/` — notes, the session journal,
   `mkdir`/`mv`/`cp`, archiving a session directory to
   `.notes/code/archive/{YYYY}-{MM}-{DD}[-{TICKET}]-{slug}/`.
 - Repo state and publication — `git add`/`commit`/`tag`/`branch`/`switch`/`worktree`,

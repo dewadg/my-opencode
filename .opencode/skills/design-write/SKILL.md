@@ -9,8 +9,8 @@ description: >
   impact assessment", or when the /analyze command hands off findings. This skill formats and writes
   the note only — it does NOT fan out investigator subagents or drive the analysis; for a change
   needing multi-project research, the /analyze command orchestrates the investigators first, then
-  calls this skill to compile the result. Do NOT use for: a root-cause analysis (use rca-write),
-  writing a spec (use spec-write), or generic notes (use note-write).
+  calls this skill to compile the result. Do NOT use for: a root-cause analysis (use rca-write), or
+  generic notes (use note-write).
 
 ---
 # Design-doc note
