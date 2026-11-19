@@ -1,12 +1,11 @@
 ---
 name: code
 description: >
-  Coding and programming work, broken into tasks and delegated to specialized subagents chosen by
-  each project's tech stack. Works on a single repo or across several projects in a workspace.
-  Use when the user wants code written or changed — e.g. "implement TICKET-123", "add endpoint X",
-  "fix the bug in Y", "refactor Z", "wire the frontend to the new API".
-  Not for diagnosing an unexplained bug (investigate the cause first) or for scoping a feature
-  before building it.
+  Write or change code in one repo or several: break the work into tasks, delegate to the
+  project's own stack agents, then verify against its gates. Use for "implement TICKET-123", "add
+  endpoint X", "fix the bug in Y", "wire the frontend to the new API". Not for diagnosing an
+  unexplained bug (investigate its cause first) or scoping a feature before building it.
+
 ---
 # Code
 
@@ -65,8 +64,8 @@ Break coding instruction into tasks, orchestrate specialized subagents. Output: 
       existing practice. Unless the project defines its own gates, the default is: the implementing
       subagent self-checks narrow (build, lint, unit tests for what it touched), then runs the
       project build and suite once; then one batch review with a fix round bounded at two passes;
-      then behavioral verification last. Two agents never build or test the same project
-      concurrently; the implementing subagent runs builds and suites, never the QA agent.
+      then behavioral verification last. Builds and suites belong to the implementing subagent,
+      never the QA agent.
 
    d. **Batch every review.** Independent tasks run parallel; each subagent pauses when done. When
       the project defines a review convention, follow it; otherwise review is batch-level, never
@@ -114,9 +113,6 @@ framework's engineering agent; test strategy, E2E, browser verification → QA /
 review of a produced diff → code review agent; containers, compose, images → container agent; schema,
 migrations, query performance → database agent; cross-cutting design → architecture review agent.
 Most specific fit wins; none fits → a general-purpose subagent.
-
-One subagent per project per task — two agents editing the same project concurrently conflict.
-Independent projects run parallel.
 
 ## Briefing subagents
 
@@ -175,36 +171,26 @@ outside review scope.
 
 ## Evidence files
 
-Each subagent writes its own `evidence-{project}-{agent}.md` into the session directory the brief
-names — one writer per file, and parallel implementers never share one. The ~15-line cap is on the
-message back to the orchestrator, never on the record: commands, exit codes, failure logs, and files
-touched go to the evidence file. `.notes/` stays out of the review diff.
+One `evidence-{project}-{agent}.md` per subagent in the session directory, never shared between
+parallel implementers. The ~15-line cap binds the message back, not the record: commands, exit
+codes, failure logs and files touched all belong in the file. `.notes/` stays out of the review diff.
 
-## Token discipline
+## Context discipline
 
-Four rules govern every round:
+Each tool call is a turn and every turn re-reads the whole context, so output size and turn count,
+not report length, dominate cost.
 
-- Cap what comes back — bound every report contract at ~15 lines.
-- Cite files instead of restating them — paths, `file:line`, section anchors.
-- Hand back paths instead of images and logs — screenshots, HTML, and full logs stay on disk.
-- Resume sessions instead of respawning them — a saved `sessionID` carries its own context.
-- A stage whose context re-read per turn exceeds roughly 100k is reading too wide — narrow that
-  stage's brief before adding another round.
-
-## Tool-output discipline
-
-Each tool call is a turn, and every turn re-reads the agent's whole context — so tool-output size and
-turn count, not report length, dominate the bill.
-
-- Search before reading: `grep` or `glob` to locate, then `read` with `offset`/`limit` on the region
-  that matters. Never read a whole file over ~500 lines; use `grep -n` with a pattern to scan instead.
-- Batch: one `grep` over the tree beats five sequential greps; one `read` with a wider window beats
-  three opened in a row. Every extra call is another full-context turn.
+- Cap what comes back: reports ~15 lines (see **Briefing subagents**), the full record to the
+  evidence file. Cite `path:line` and section anchors instead of restating.
+- Hand back paths, not payloads — screenshots, HTML and full logs stay on disk.
+- Resume a saved `sessionID` instead of respawning: that agent already holds its context.
+- Search before reading: `grep`/`glob` to locate, then `read` with `offset`/`limit`; never read a
+  whole file over ~500 lines.
 - Escalate cheaply: `git diff --stat` before `git diff`, `--name-only` before per-file diffs,
-  `head`/`tail` on logs, `--filter`/`-q` on noisy commands. Narrow the command, not the answer.
-- Never echo tool output into the reply or re-read a file you just wrote. Cite `path:line`; the
-  orchestrator reads what it needs.
-- Reports and briefs stay as specified — the message cap is not an excuse to move cost into calls.
+  `head`/`tail` on logs, `--filter`/`-q` on noisy commands.
+- Batch — one `grep` over the tree beats five sequential greps, one wider `read` beats three.
+- Never echo tool output into the reply or re-read a file you just wrote.
+- A stage re-reading over ~100k per turn is reading too wide: narrow that brief, don't add rounds.
 
 ## Verifying
 

@@ -1,11 +1,10 @@
 ---
 name: defect-report
-description: > 
-  Emit code-review findings and QA defect reports in the shared machine-digestible
-  severity-tagged format. ALWAYS use when ending a code review, a QA scenario-execution run,
-  or an exploratory QA pass with findings — and when the user asks for findings, defects, or
-  review comments in a standardized report. Not for writing the review itself (the reviewing
-  agent owns that), not for notes (use note-write), not for RCAs (use rca-write).
+description: >
+  Emit review findings and QA defects in the shared severity-tagged format: one line per finding
+  (path:line, tier, problem, fix), ordered by severity, then totals and a one-sentence verdict.
+  ALWAYS use when a code review or QA run ends with findings, or the user asks for findings in a
+  standard format. Not for the review itself, notes (note-write), or RCAs (rca-write).
 
 ---
 

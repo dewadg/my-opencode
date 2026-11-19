@@ -1,15 +1,10 @@
 ---
 name: test-scenario
 description: >
-  Generate test scenarios in Given/When/Then (Gherkin-style) format and present them as a single
-  markdown table with columns ID | Scenario | Given | When | Then. ALWAYS use when the user asks to
-  write test cases, test scenarios, test plans, acceptance criteria, Given/When/Then, BDD scenarios,
-  or "how should we test this feature" — and when scoping a feature BEFORE development (pre-dev,
-  defines what to build) or verifying one AFTER (post-dev, defines what to check). Covers happy
-  path, alternate paths, edge cases, and error/negative paths. Not for executing the tests (the
-  agent executing the tests owns that), not for writing unit test code (the language engineering
-  capability does that), and not for a ticket's Acceptance Criteria section — that section belongs to
-  ticket-description, which owns the ticket body; this skill produces the standalone scenario table.
+  Generate Given/When/Then scenarios as one table (ID | Scenario | Given | When | Then) covering
+  happy, alternate, edge and error paths: before development to define behaviour, after it to
+  verify. Use for "write test cases", "test scenarios", "how should we test this feature". Not for
+  executing them, for unit-test code, or for a ticket's AC section (ticket-description).
 
 ---
 

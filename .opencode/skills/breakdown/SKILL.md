@@ -1,20 +1,13 @@
 ---
 name: breakdown
 description: >
-  Break a big block of requirements — a PRD, a pasted requirements doc, a vague or oversized
-  ticket, an epic, a Figma flow — into tickets human engineers can pick up (backend, frontend,
-  mobile, and the other seams: migrations, jobs, infra, analytics, admin), each sized in human
-  working time (t-shirt), framed by business impact (via the business-impact skill), prioritized,
-  and sequenced. Also grooms an existing backlog — when the user asks to groom a milestone, label,
-  epic, or ticket list — and, when the user asks you to write the tickets, creates them via glab/gh
-  only after confirmation. Orchestrates: maps the codebase with code explorers, cuts tickets per seam,
-  writes each body with the ticket-description skill, and creates them via glab/gh only after the
-  user confirms. Use whenever the user wants requirements or a ticket turned into multiple tickets —
-  e.g. "break this down into tickets", "split #42", "this ticket is too big", "slice this PRD into
-  BE/FE/mobile tickets", "estimate this feature", "which of these should we do first", "groom the
-  backlog for milestone Q4", or loading the breakdown skill. Not for a single ticket's description
-  with no breakdown (use ticket-description), technical impact analysis with no tickets out (use
-  /analyze), or building the work (use code).
+  Break a requirements block (PRD, epic, oversized ticket, Figma flow) into tickets per seam —
+  backend, frontend, mobile, migrations, jobs, infra — framed by business impact, estimated,
+  prioritized, sequenced; or groom an existing backlog. Use for "break this down into tickets",
+  "split #42", "this ticket is too big", "groom milestone Q4". Writes to the tracker only after
+  confirmation. Not for a single ticket's description (ticket-description) or technical scoping
+  with no tickets out (/analyze).
+
 ---
 
 # Breakdown

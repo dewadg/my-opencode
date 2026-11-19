@@ -172,7 +172,7 @@ If `qa-eng`'s tier-2 section, the `code` skill's Verifying section, or `tech-lea
 change, change the other two with them. Briefs carry scope, not payload — no pasted diffs — and
 reports are capped and point at evidence paths, so the tech lead's context stays bounded across
 rounds; `defect-report`'s size rules and `code`'s briefing cap move together — change one, change
-the other. `code`'s Tool-output discipline, `tech-lead.md`'s reading rule, and `qa-eng`'s context
+the other. `code`'s Context discipline, `tech-lead.md`'s reading rule, and `qa-eng`'s context
 discipline express one premise — tool output and turn count dominate cost — so change them together.
 
 **Breakdown.** The `breakdown` skill orchestrates in the main thread (it must — it spawns

@@ -1,14 +1,10 @@
 ---
 name: note-write
-description: >-
-  Write or update a note for later reference, in the shared note format: the frontmatter schema
-  (`tags`, `projects`, `created`, `updated`, `related`, `description`), the filename
-  `{YYYY}-{MM}-{DD}[-{TICKET}]-descriptive-slug.md`, the location (`.notes/` by default, or wherever
-  the project's `AGENTS.md` says), the per-session directory convention, and the note body shape.
-  Owns the writing half of the shared format that note-search reads back. ALWAYS use when the user
-  wants knowledge persisted — "write a note about…", "journal this", "save what we learned", "record
-  this decision", "note this for next time" — or when another skill hands off a finding to keep. Not
-  for finding, reading, or searching existing notes (use note-search).
+description: >
+  Write or update a note in the shared format: frontmatter (`tags`, `projects`, `created`,
+  `updated`, `related`, `description`), filename `{YYYY}-{MM}-{DD}[-{TICKET}]-slug.md`, `.notes/`
+  location, one directory per run, archived in one move. Use for "write a note", "journal this",
+  "record this decision". Not for searching notes (note-search).
 
 ---
 

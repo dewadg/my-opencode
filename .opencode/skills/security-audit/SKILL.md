@@ -1,19 +1,13 @@
 ---
 name: security-audit
 description: >
-  Security guidance and source-only vulnerability review for codebases, APIs, services, CLI
-  tools, libraries, and daemons: threat-model a surface, trace a trust boundary to its sink,
-  judge whether a candidate is a real vulnerability, or run a full six-phase audit with a
-  coverage ledger, independent verification, and a report note. Use for security questions,
-  focused reviews, triage, and when the user says "security audit this codebase", "find
-  security vulnerabilities", "pen-test the repo", "threat model X", or "review this service for
-  authz bugs". Run the complete workflow only when the user explicitly asks for an audit,
-  pen-test, full/comprehensive/end-to-end review, or report artifacts; otherwise stay in
-  guidance mode and touch only the part that answers the question. Not for adding CI scans (use
-  gitlab-security-scan), not for reviewing a diff (that is the code-review capability's job, not this
-  skill's), not for a compliance or controls assessment (that is the compliance-audit capability's
-  job), not for writing the fix (use code), not for formatting findings as a table (use
-  defect-report).
+  Source-only security review: threat-model a surface, trace a trust boundary to its sink, judge a
+  candidate, or run the full six-phase audit with a coverage ledger and independent verification.
+  Use for "security audit this codebase", "find vulnerabilities", "threat model X". Guidance by
+  default; the full workflow only when an audit is explicitly requested. Not for CI scanning
+  (gitlab-security-scan), diff review (code-reviewer), compliance controls (compliance-auditor),
+  or writing the fix (code).
+
 ---
 
 # Security Audit
@@ -228,54 +222,38 @@ verification of `confirmed` records.
 
 #### Cost budget
 
-The ledger makes spend countable: one unit is roughly one hunter assignment, and one surviving
-candidate is one or two verifier assignments depending on profile. When the user sets a budget — or
-the parent proposes one for a large target — record `budget` in `run-metadata.json` as a maximum
-number of `subagent` invocations across all phases.
+The ledger makes spend countable: one unit ≈ one hunter assignment, one surviving candidate ≈ one
+or two verifier assignments. When the user sets a budget (or the parent proposes one for a large
+target), record `budget` in `run-metadata.json` as a maximum number of `subagent` invocations across
+all phases.
 
-Apply the strict budget gate before launching any reconnaissance subagent. Reserve the four baseline
-reconnaissance calls, one final post-wave critic for `quick` or one post-wave plus one distinct
-final-clean critic for `standard`/`deep`, and at least one verifier call. Add focused reconnaissance
-only after repeating this gate for each extra call. If the requested budget cannot fund that minimum,
-launch no subagent: ask for a larger budget, narrower scope, or different profile. If the request
-stays unchanged, the run ends before Phase 1 — a pre-run exit, not a mid-phase stop: create
-`<run-dir>/` holding only `run-metadata.json` with `run_status: "incomplete"` and
-`incomplete_reason: "budget_cannot_fund_reconnaissance_and_reserves"`, create no report note and no
-other run artifact, and state the gap and the minimum the gate needs in the reply to the user.
+**Gate — apply before launching any subagent, and again before every later wave.** The minimum a
+run needs: four baseline reconnaissance calls, the profile's critics (one post-wave critic for
+`quick`; one immediate post-wave plus one distinct final-clean critic for `standard`/`deep`), and at
+least one verifier, plus verifier reserve of 1–2 calls per expected candidate (when in doubt, 30% of
+the balance after critic reserve). If the budget cannot fund that, launch nothing and ask for a
+larger budget, narrower scope, or a different profile. If the request stays unchanged, end before
+Phase 1: create `<run-dir>/` holding only `run-metadata.json` with `run_status: "incomplete"` and
+`incomplete_reason: "budget_cannot_fund_reconnaissance_and_reserves"`, no note and no other
+artifact, and state the gap and the minimum the gate needs.
 
-Spend it in this order:
+Spending order: reserve critics and validation first and never assign hunters into either reserve;
+assign hunters to units by priority until the hunting allowance is spent; spend the post-wave
+critic immediately after its wave and keep the final-clean and validation reserves intact. If a
+later wave cannot cover its critic calls plus validation reserve, launch no hunters from it and mark
+its units `deferred` with reason `budget_cannot_reserve_critics_and_validation`, using the retained
+final-clean critic to record the gap. Before wave 1, restate the estimate (seeded units, hunters,
+mandatory critics, reserve) and say so if it does not fit; if later facts consume the final-critic
+reserve, launch no hunters, mark all planned work deferred, and set
+`incomplete_reason: "critic_budget_exhausted"` — no complete-coverage claim.
 
-1. Count reconnaissance, every post-wave critic, and the separate final-clean critic as `subagent`
-   invocations.
-2. **Reserve critics and validation before hunting.** For `quick`, reserve its one post-wave final
-   critic. Before every `standard` or `deep` hunter wave, reserve one immediate post-wave critic plus
-   one distinct final-clean critic. Also reserve verifier cost from the profile (about 1 or 2
-   subagents per expected candidate; when in doubt reserve 30% of the balance after critic
-   reservation). Never assign hunters into either reserve.
-3. Assign hunters to units in priority order until the hunting allowance is spent. Spend the
-   reserved post-wave critic immediately after that wave; keep the final-clean and validation
-   reserves intact.
-4. Before a later wave, reserve its new post-wave critic again. If the remaining budget cannot cover
-   the required critic calls and validation reserve, launch no hunters from that wave, mark its
-   planned units `deferred` with reason `budget_cannot_reserve_critics_and_validation`, and use the
-   retained final-clean critic to record the resulting gap.
-
-Before wave 1, update the pre-recon estimate with seeded units, implied hunter count, mandatory critic
-calls, validation reserve, and whether the remaining budget covers the plan. If it clearly cannot,
-say so and propose a tighter scope or a coarser profile instead of silently thinning evidence. If
-later facts consume the required final-critic reserve, launch no hunters, mark all planned work
-deferred, set the run incomplete with reason `critic_budget_exhausted`, and make no complete-coverage
-claim.
-
-A strict total-subagent budget can still be exceeded by an unexpectedly large candidate set or by a
-material Phase 5 replacement that needs another independent verifier. If the remaining budget cannot
-validate every candidate, stop hunting, validate candidates in fingerprint order while the budget
-permits, and set `run_status: "incomplete"` plus
-`incomplete_reason: "validation_budget_exhausted"`. Keep each unvalidated fingerprint linked to a
-`candidate` ledger unit with that unresolved reason. Do not put an unvalidated candidate in
-`findings.json`, relabel it `needs_validation`, or report the run as complete. Phase 6 may produce a
-partial report only if its first section states that candidate validation is incomplete and lists the
-affected fingerprints and units. Never exceed a user-set strict budget silently.
+A strict budget can still be exceeded by a large candidate set or a material Phase 5 replacement.
+Then stop hunting, validate in fingerprint order while the budget permits, and set `run_status`
+to `"incomplete"` with `incomplete_reason: "validation_budget_exhausted"`, leaving each unvalidated
+fingerprint on a `candidate` ledger unit. Do not file an unvalidated candidate in `findings.json`,
+relabel it `needs_validation`, or report the run complete; a partial report is allowed only if its
+first section states that candidate validation is incomplete and lists the affected fingerprints
+and units. Never exceed a user-set strict budget silently.
 
 ## Core principles
 

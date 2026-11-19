@@ -1,16 +1,11 @@
 ---
 name: design-shot
 description: >
-  Fetch a Claude Design canvas (a claude.ai Design artifact — screens as artboards), list its
-  screens, render any screen locally, and screenshot it whole or crop a portion of it (a form, a
-  dialog, a card) in a chosen state (default, loading, error…), then optionally upload the PNG to a
-  GitLab project so it embeds in an issue. Use whenever a ticket or breakdown needs to point at FE or
-  mobile screen designs from Claude Design — e.g. "attach the login screen design to the ticket",
-  "screenshot the order dialog from the Stocko canvas", "which screens are in this design", "crop the
-  error state of the form", or when the breakdown or ticket-description skill reaches design links
-  and the design lives in a claude.ai Design artifact. Not for Figma (link it directly), for authoring
-  or editing screens (design work is a different job, done outside this skill), or for testing a
-  running app's UI (that is the QA capability's job, not this skill's).
+  Render and screenshot screens from a Claude Design canvas: list boards, shoot a whole screen or
+  a crop, in a state (default, loading, error), optionally uploading the PNG to a GitLab issue.
+  Use when a ticket or breakdown needs a design image — "screenshot the order dialog", "which
+  screens are in this design". Not for Figma (link it), authoring screens, or testing a running
+  app.
 
 ---
 
