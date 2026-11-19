@@ -2,6 +2,9 @@
 .idea/
 .DS_Store
 
+# Notes and journals are local-only — never committed (skills refuse to run otherwise)
+.notes/
+
 # Secrets — this repo must only ever reference credentials as {env:VAR} or ${ENV_VAR}
 .env
 .env.*
