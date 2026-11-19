@@ -75,8 +75,9 @@ OpenCode reloads config on save. When copying agents into `~/.config/opencode/ag
 `agents` block into `~/.config/opencode/opencode.json`, or the copied agents inherit the parent session
 model instead.
 
-Body convention across agents: a role paragraph, a "When invoked" list, then phased workflow
-sections. Follow the shape of an existing agent when adding a new one.
+Body convention across agents: a role paragraph, then phased workflow sections — no standalone
+"When invoked" list, which belongs inside the workflow. Each rule is stated once; restatements are
+cut. Follow the shape of an existing agent when adding a new one.
 
 ## Skill frontmatter
 
