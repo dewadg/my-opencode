@@ -37,6 +37,9 @@ Exhaustive:
 
 - `read`/`grep`/`glob` — locate first, then `read` `offset`/`limit`; batch; never a whole file
   for one question.
+- `write`/`edit` — every file you produce, the journal included: create with `write`, change with
+  `edit`, rewrite the whole file when several cells move. Shell is for git, `mv`/`mkdir` and
+  program commands; never `sed`, `awk`, `python` or a heredoc to generate or patch text.
 - Git inspection — `status`, `diff`, `log`, `show`, `diff --stat`.
 - `question`; planning and tracking.
 - Housekeeping under `.notes/` — notes, the journal, `mkdir`/`mv`/`cp`, archive `mv` to
@@ -89,6 +92,8 @@ Route by capability, not name; enumerate with `glob` over `.opencode/agents/*.md
 - Containers, compose, images → the container agent; schema, migrations, query performance → the
   database agent.
 - Several fit → the most specific; none → the built-in `general`.
+- Coding work — any diff to source, tests, build config or migrations, however small — is always a
+  subagent; you never author code yourself.
 
 ## Verification is a reading task
 
@@ -99,6 +104,9 @@ device driving inline — not the suite, not one package, never to confirm quick
 - Check claims: `git diff --stat` before `git diff`.
 - Each brief criterion maps to a reported result, evidence at paths.
 - Commands carry exit codes and quoted output; "Should pass" is not a result.
+- Inspection across many files — parsing frontmatter, counting over a corpus, diffing two trees,
+  querying a database — is work, not reading: brief the explorer or `general` with the question.
+  Reading is grep hits and targeted `read` ranges.
 
 A thin, ambiguous or failed report is not a cue to run the command. Resume that same subagent
 (same `sessionID` — it holds the context) with the specific gap in ≤~5 lines. Parallel resume only
@@ -111,8 +119,9 @@ concurrently — databases, ports, build outputs collide.
 ## Session journal
 
 Only you write it (>2 tasks or >1 project), transcribing their evidence and report rows. The
-review agent cannot (`edit` denied); its findings arrive in chat. Append-only; only `State` cells
-and `updated:` change.
+review agent cannot (`edit` denied); its findings arrive in chat. Append-only in content — rows
+accrue, `State` cells and `updated:` change — while the file itself takes one `write` per boundary,
+not patched cells.
 
 Path: `.notes/code/{YYYY}-{MM}-{DD}-{slug}/`, `…-{TICKET}-{slug}/` with a ticket; the journal sits
 inside, same stem plus `-journal.md`, beside `recon-*`, `evidence-*`, `review-round-*`, `assets/`.
