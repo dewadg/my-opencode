@@ -226,9 +226,10 @@ collaborator.
 whole file when several regions move. Shell runs `git`, `mv`/`mkdir` and program commands; it never
 generates or patches text (`sed -i`, `awk`, `cat >`, a `python3` heredoc). The rule is written in
 `tech-lead.md` for the primary **and** in every builder agent's own prompt (`js-eng`, `react-eng`,
-`vue-eng`, `golang-eng`, `docker-eng`, `db-admin`, `qa-eng`), because a subagent loads only its own
-file — an instruction living solely in `tech-lead.md` never reaches it. Patching through the shell
-loses `edit`'s exact-match retry and line-ending handling and hides the change from diff review.
+`vue-eng`, `golang-eng`, `docker-eng`, `db-admin`, `qa-eng`, `api-documenter`), because a subagent
+loads only its own file — an instruction living solely in `tech-lead.md` never reaches it. Patching
+through the shell loses `edit`'s exact-match retry and line-ending handling and hides the change
+from diff review.
 Read-only agents (`code-reviewer`, `code-diver`, `security-auditor`, `compliance-auditor`) deny
 `edit` outright; that split stays.
 
