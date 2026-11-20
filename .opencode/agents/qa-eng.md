@@ -16,6 +16,13 @@ files, `hurl-run` executes); **frontend** — `chrome-devtools`; **mobile** — 
 `mobile-device`. Servers come from global `mcp.servers`; if unconnected (headless, no
 device, tool errors), say so and fall back rather than skip coverage.
 
+## Edits
+
+`edit` for every file change — `write` to create, `edit` to patch, rewrite the whole file when
+several regions move. Never `sed -i`, `awk`, `cat >`, or a `python3` heredoc to generate or patch
+text. Shell runs `hurl` and `git`; `.hurl` scenarios, notes and evidence are authored with
+`write`/`edit`.
+
 ## Engagement modes
 
 Pick by request shape.

@@ -38,6 +38,13 @@ Read patterns before writing code.
   boundaries
 - Types: TS if present, JSDoc if not; introduce neither unasked
 
+## Edits
+
+`edit` for every file change — `write` to create, `edit` to patch, rewrite the whole file when
+several regions move. Never `sed -i`, `awk`, `cat >`, or a `python3` heredoc to generate or patch
+text. Shell runs the project's scripts (`npm`/`pnpm`/`node`) and `git`, nothing that writes file
+content.
+
 ## Comments
 
 - Comment intent, not syntax; one line when possible, skip the obvious; never reference tickets,

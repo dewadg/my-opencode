@@ -36,6 +36,13 @@ Read patterns before writing code.
 - `go generate` for repetition; struct tags correct
 - Examples for complex APIs; `godoc` is the contract
 
+## Edits
+
+`edit` for every file change — `write` to create, `edit` to patch, rewrite the whole file when
+several regions move. Never `sed -i`, `awk`, `cat >`, or a `python3` heredoc to generate or patch
+text. Shell runs `go` commands (`build`, `test`, `generate`) and `git`, nothing that writes file
+content.
+
 ## Comments
 
 - Comment intent, not syntax; one line when possible, skip the obvious; never reference tickets,

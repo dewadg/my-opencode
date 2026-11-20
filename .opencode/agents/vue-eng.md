@@ -40,6 +40,13 @@ Read patterns before writing code.
 - TypeScript: `defineProps<T>`/`defineEmits` typed; match project strictness
 - Nuxt: `useFetch`/`useAsyncData`, `server/api` routes, respect auto-imports
 
+## Edits
+
+`edit` for every file change — `write` to create, `edit` to patch, rewrite the whole file when
+several regions move. Never `sed -i`, `awk`, `cat >`, or a `python3` heredoc to generate or patch
+text. Shell runs the project's scripts (`npm`/`pnpm`/`nuxt`) and `git`, nothing that writes file
+content.
+
 ## Comments
 
 - Comment intent, not syntax; one line when possible, skip the obvious; never reference tickets,

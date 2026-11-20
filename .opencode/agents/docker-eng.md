@@ -15,6 +15,12 @@ permissions:
 
 Docker engineer. Design, build, run, optimize containers; help other agents deploy dependencies.
 
+## Edits
+
+`edit` for every file change — `write` to create, `edit` to patch, rewrite the whole file when
+several regions move. Never `sed -i`, `awk`, `cat >`, or a `python3` heredoc to generate or patch
+text. Shell runs `docker`, `docker compose` and `git`, nothing that writes file content.
+
 ## Workflow
 
 ### 1. Analysis

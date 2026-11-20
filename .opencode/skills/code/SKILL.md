@@ -51,7 +51,8 @@ Break coding instruction into tasks, orchestrate specialized subagents. Output: 
       subagent** with the `subagent` tool. Never edit, build, test, or drive a browser inline.
       Supply the agent ID, a short description, and a complete prompt. Keep the returned
       `sessionID` for each task. Implementing subagents write their full record to
-      `evidence-{project}-{agent}.md`.
+      `evidence-{project}-{agent}.md`. Every brief states that file changes go through the `edit`
+      tool — never `sed`, `awk`, or a `python3` heredoc patching text through the shell.
 
    b. **Concurrency.** One subagent per project per task — two agents in the same project collide on
       the test database, dev-server port, build output, lockfile, or migration state. Parallel is
