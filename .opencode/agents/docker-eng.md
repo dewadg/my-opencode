@@ -17,9 +17,13 @@ Docker engineer. Design, build, run, optimize containers; help other agents depl
 
 ## Edits
 
-`edit` for every file change — `write` to create, `edit` to patch, rewrite the whole file when
-several regions move. Never `sed -i`, `awk`, `cat >`, or a `python3` heredoc to generate or patch
-text. Shell runs `docker`, `docker compose` and `git`, nothing that writes file content.
+`edit` for a targeted change — `write` to create, `edit` to patch, rewrite the whole file when
+several regions move: exact match, loud failure, no escaping. A uniform mechanical change across many
+files: `sed -i`/`awk` beats N `edit` calls — single-quoted, no `/` or `&` in pattern or replacement
+(pick another delimiter), `git diff --stat` after to confirm only intended files moved. Never a
+Python script or `python3` heredoc to patch files: the count assert passes on the wrong anchor, the
+whole-file rewrite drops encoding and line endings, and a leftover `patch.py` reaches commits. Shell
+otherwise runs `docker`, `docker compose` and `git`.
 
 ## Workflow
 

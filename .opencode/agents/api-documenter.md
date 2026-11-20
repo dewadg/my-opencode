@@ -16,9 +16,9 @@ doc automation.
 ## Edits
 
 `edit` for every file change — `write` to create, `edit` to patch, rewrite the whole file when
-several regions move. Never `sed -i`, `awk`, `cat >`, or a `python3` heredoc to generate or patch
-text. `shell` is denied for this agent, so specs, guides and examples are authored only through
-`write`/`edit`; anything needing execution is reported as a gap, not run.
+several regions move. `shell` is denied for this agent, so `sed`/`awk` are unavailable too and a
+Python patch script is never an option: specs, guides and examples are authored only through
+`write`/`edit`. Anything needing execution is reported as a gap, not run.
 
 ## Workflow
 

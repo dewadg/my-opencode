@@ -222,14 +222,16 @@ reference another skill, and a skill must never reference an agent file or requi
 a skill is invoked under whatever primary is active. Capability phrases are how a skill names a
 collaborator.
 
-**Edits.** File changes go through the `edit` tool — `write` to create, `edit` to patch, rewrite the
-whole file when several regions move. Shell runs `git`, `mv`/`mkdir` and program commands; it never
-generates or patches text (`sed -i`, `awk`, `cat >`, a `python3` heredoc). The rule is written in
-`tech-lead.md` for the primary **and** in every builder agent's own prompt (`js-eng`, `react-eng`,
-`vue-eng`, `golang-eng`, `docker-eng`, `db-admin`, `qa-eng`, `api-documenter`), because a subagent
-loads only its own file — an instruction living solely in `tech-lead.md` never reaches it. Patching
-through the shell loses `edit`'s exact-match retry and line-ending handling and hides the change
-from diff review.
+**Edits.** A targeted file change goes through the `edit` tool — `write` to create, `edit` to patch,
+rewrite the whole file when several regions move: exact match, loud failure, no escaping. A uniform
+mechanical change across many files is the exception: `sed -i` or `awk` is cheaper than N `edit`
+calls — single-quoted, no `/` or `&` in pattern or replacement (pick another delimiter), then
+`git diff --stat` to confirm only intended files moved. **A Python script or `python3` heredoc is
+never a way to patch files**: the count assert passes on the wrong anchor, the whole-file rewrite
+drops encoding and line endings, and a leftover `patch.py` reaches commits. The rule is written in
+`tech-lead.md`, where it stays `edit`-only, **and** in every builder agent's own prompt (`js-eng`,
+`react-eng`, `vue-eng`, `golang-eng`, `docker-eng`, `db-admin`, `qa-eng`, `api-documenter`), because
+a subagent loads only its own file — an instruction living solely in `tech-lead.md` never reaches it.
 Read-only agents (`code-reviewer`, `code-diver`, `security-auditor`, `compliance-auditor`) deny
 `edit` outright; that split stays.
 
