@@ -2,6 +2,9 @@
 description: Use this agent when writing or improving API documentation, OpenAPI specifications, interactive documentation portals, or code examples for APIs.
 mode: subagent
 permissions:
+- action: shell
+  resource: "*"
+  effect: deny
 - action: subagent
   resource: "*"
   effect: deny
