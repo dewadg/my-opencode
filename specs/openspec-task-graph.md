@@ -233,7 +233,8 @@ one layer with two nodes.
 behavior. It must pass its checks with only its ancestors' work in the tree: no file it needs belongs
 to a non-ancestor, and no test depends on a later node. Tests and docs for a node's behavior land in
 that node, not in a final catch-all. Gate nodes (`review`, `qa`) only verify; they do not fix, and
-their findings reopen the owning node.
+their findings reopen the owning node. A check that names a non-ancestor's file is warning `W009`:
+either add the edge or move the file into this node.
 
 **Shared files.** If two nodes must write the same file, either merge them or extract the file (or its
 interface) into an earlier contract node. A file owned by two unrelated nodes is warning `W008`.
@@ -275,6 +276,7 @@ Warnings (exit 0):
 | `W006` | node has no behavioral check: no `Check:` invokes a test runner (`go test`, `make test`, `hurl`, `vitest`, `playwright`, …) and `Gate` is not `none` |
 | `W007` | `Gate: unit` node covers no TC |
 | `W008` | `Owns:` path shared by two nodes where neither is an ancestor of the other |
+| `W009` | a task `Check:` names a path owned by a node that is not an ancestor (hidden dependency) |
 
 `check --changed` scopes every rule to files in the diff that carry the marker.
 
