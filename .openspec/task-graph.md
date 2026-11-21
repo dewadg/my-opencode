@@ -5,9 +5,9 @@ updated: 2026-11-21
 tags: [openspec, graph, tasks, schema, workflow, validator, spec-driven]
 projects: [my-opencode, stocko, artifact]
 related:
-  - ../../karambyte/stocko/.notes/2026-11-21-graph-engineering-openspec.md
-  - ../.openspec/schemas/task-graph/schema.yaml
-  - ../.openspec/schemas/task-graph/templates/tasks.md
+  - ../../../karambyte/stocko/.notes/2026-11-21-graph-engineering-openspec.md
+  - schemas/task-graph/schema.yaml
+  - schemas/task-graph/templates/tasks.md
 description: Task-graph schema for OpenSpec changes — group nodes, Depends on edges, Owns/Resource conflict sets, gates, computed layers and run batches, generated graph.md; no waves, no schema fork.
 ---
 
