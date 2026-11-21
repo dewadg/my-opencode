@@ -208,7 +208,9 @@ artifacts:
       parses the checkbox: `[x]` is done; every other marker is unfinished. The id prefix
       must equal the node id: node 2 owns 2.1, 2.2.
       - `Check:` states how to prove the task, with the command and the outcome that must
-        hold - an exit status, a count, an output.
+        hold - an exit status, a count, an output. For a `review` or `qa` gate, `Check:` names
+        the result shape the summary must carry, e.g. findings by file and severity or scenario
+        pass/fail, so the durable record is self-contained.
       - `Covers:` names ids from design.md's Test scenarios table or the main specs' scenarios; `all` is legal only on a
         review or QA gate.
       - Keep node and task ids stable; other artifacts reference them.
@@ -278,8 +280,9 @@ apply:
     2. The ready set is every node whose dependencies are done, in `(layer, id)` order,
        capped at 4 and never two nodes sharing an `Owns:` path or a `Resource:` tag.
     3. Hand each node to the agent named in its heading. Never code inline.
-    4. A node is done only when every task's `Check:` passes; gate evidence is written under
-       `openspec/changes/<change>/evidence/` while the gate verifies and is never committed.
+    4. A node is done only when every task's `Check:` passes. A gate reports a summary, not a
+       path, and the orchestrator writes that summary on the task line. Gate evidence is written
+       under `openspec/changes/<change>/evidence/` while the gate verifies and is never committed.
        Never tick a box to unblock downstream work.
     5. On failure write `(failed: reason)` on the task and return it to the same owner.
        Review findings reopen the implementation node; QA reruns only failed scenarios.

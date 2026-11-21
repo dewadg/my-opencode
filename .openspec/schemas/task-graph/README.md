@@ -188,6 +188,10 @@ exactly `evidence/<name>.md`: no `..`, no leading `/`, no other directory.
 - The durable record of a gate is `tasks.md`, not the report: the `[x]` tick, and `(failed: reason)`
   on the task line for a failure. A failing gate must write that marker: a report alone is deleted,
   so a verdict that exists only in `evidence/` does not survive.
+- A gate's verdict is summarized from its report, never recorded as a bare pointer to it. The gate
+  agent reads its report and returns the substance — findings by file and severity, scenario
+  pass/fail, counts, exit codes — and the record written into `tasks.md` or the journal states that
+  substance. Naming `evidence/...` is backing for it, never the sole record of the verdict.
 - After archive, `Evidence:` lines are historical pointers whose targets are gone by design. Do not
   rewrite, remove or renumber them.
 
@@ -201,7 +205,8 @@ not an artifact: OpenSpec does not generate it, list it or gate on it, and `appl
 `design.md` holds the decisions made before apply. The journal holds the ones apply forces: a
 library or interface choice the design left open, a deviation from `design.md`, a discovery that
 changes how a node executes. A gate's verdict is written into `evidence/` while the gate runs; the
-record that survives is the `tasks.md` marker.
+record that survives is the `tasks.md` marker. A `D` entry that rests on a gate verdict states the
+finding itself, not a path to it.
 
 ```markdown
 <!-- openspec-journal: 1 -->
