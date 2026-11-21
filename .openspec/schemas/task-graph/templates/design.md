@@ -44,10 +44,10 @@
 
 ## Docs to update
 
-<!-- docs/database.md when the change adds a migration; docs/background-jobs.md when it adds or
-     changes a sync_jobs kind, a channel sync trigger, the linked channel sync rule or what the
-     activity feed lists; docs/architecture.md for a new domain, cross-domain call, queue, task
-     chain or term. Delete the section when no doc changes. -->
+<!-- The project's database docs when the change adds a migration; its background-job docs when it
+     adds or changes a job kind, a sync trigger, a linked-sync rule or what the activity feed lists;
+     its architecture docs for a new domain, cross-domain call, queue, task chain or term. Name the
+     actual files. Delete the section when no doc changes. -->
 
 ## Open Questions
 

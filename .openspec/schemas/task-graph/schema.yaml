@@ -148,16 +148,16 @@ artifacts:
       - **Test scenarios**: A table of `TC-...` ids with scenario, given, when and then. Every requirement in the spec deltas names one of these ids.
       - **Risks / Trade-offs**: Known limitations, things that could go wrong. Format: [Risk] → Mitigation
       - **Migration Plan**: Steps to deploy, rollback strategy (if applicable)
-      - **Docs to update**: The docs the change must update. `docs/database.md` when it adds a migration; `docs/background-jobs.md` when it adds or changes a `sync_jobs` kind, a channel sync trigger, the linked channel sync rule or what the activity feed lists; `docs/architecture.md` for a new domain, cross-domain call, queue, task chain or term.
+      - **Docs to update**: The docs the change must update, by role: the database docs when it adds a migration; the background-job docs when it adds or changes a job kind, a sync trigger, a linked-sync rule or what the activity feed lists; the architecture docs for a new domain, cross-domain call, queue, task chain or term. Name the project's actual files.
       - **Open Questions**: Unknowns that can safely be answered later without
         changing the specs, the approach, or the task breakdown. Omit if none.
 
       Rules:
       - Explain code flow with the `call-graph` skill, not prose.
       - Define test scenarios with the `test-scenario` skill; their ids become the `TC-...` values.
-      - Write HTTP endpoint tests with the `hurl-write` skill. Change-only checks go in `test/hurl/scratch/` (gitignored); lasting asserts extend the matching `test/hurl/` regression file.
-      - Name every new or renamed foreign key column, and every column, jsonb key or payload field holding another row's id, by the project's `AGENTS.md` (or `CLAUDE.md`) foreign-key naming rule, and list them under Shared contracts.
-      - Test scenarios and HTTP tests run locally only (the `dev` env in `variables.yaml`); never plan staging or production testing.
+      - Write HTTP endpoint tests with the `hurl-write` skill when the project uses hurl. Change-only checks go in the project's scratch test location; lasting asserts extend the matching regression file.
+      - Name every new or renamed foreign key column, and every column, jsonb key or payload field holding another row's id, by the project's foreign-key naming rule, and list them under Shared contracts.
+      - Test scenarios and HTTP tests run in the project's local environment only; never plan staging or production testing.
 
       Open questions are for genuinely deferrable unknowns, not decisions you
       skipped. If a question would change the specs, the chosen approach, or
@@ -229,9 +229,10 @@ artifacts:
         earlier contract node.
       - Include a review gate (`code-reviewer`, `Covers: all`) and, when behavior
         changes, a QA gate with its evidence path. Gates verify only; they do not fix.
-      - A migration requires a node owning `docs/database.md`; a `sync_jobs` change
-        requires `docs/background-jobs.md`; a new domain requires
-        `docs/architecture.md` and its `doc.go`.
+      - A migration requires a node owning the project's database docs; a change to job
+        kinds, sync triggers, linked-sync rules or the activity feed requires its
+        background-job docs; a new domain requires its architecture docs and the
+        domain's package documentation.
 
       Layers and run batches are computed, never written:
       `layer(n) = 1 + max(layer(dep))`; a run batch is the ready set minus overlapping

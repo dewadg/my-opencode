@@ -41,15 +41,15 @@ progress and archive gate are unchanged.
   renamed foreign key / id-holding column or payload field under the project's naming rule
 - Test scenarios — `TC-…` table with scenario, given, when, then; the spec deltas reference these ids
 - Risks / Trade-offs, Migration Plan
-- Docs to update — `docs/database.md` on a migration; `docs/background-jobs.md` on `sync_jobs` kinds,
-  channel sync triggers, the linked channel rule or the activity feed; `docs/architecture.md` on a
-  new domain, cross-domain call, queue, task chain or term
+- Docs to update — the database docs on a migration; the background-job docs on a job kind, sync
+  trigger, linked-sync rule or the activity feed; the architecture docs on a new domain, cross-domain
+  call, queue, task chain or term. Name the project's actual files.
 - Open Questions
 
 Rules: code flow is explained with the `call-graph` skill; scenarios come from the `test-scenario`
-skill; HTTP tests come from the `hurl-write` skill, with change-only checks in `test/hurl/scratch/`
-and lasting asserts in the matching regression file; tests run locally only (`dev` in
-`variables.yaml`), never staging or production.
+skill; HTTP tests come from the `hurl-write` skill when the project uses hurl, with change-only
+checks in the project's scratch location and lasting asserts in its regression file; tests run in
+the local environment only, never staging or production.
 
 ## `tasks.md` grammar
 
@@ -197,7 +197,7 @@ checkboxes to sequential ids; the checker correlates by source `line`, never by 
 | `G012` | `Covers: all` on a non-gate node |
 | `G013` | `review`/`qa`/`human` gate without `Evidence:` |
 | `G014` | `review`/`qa` node does not depend on every implementation node it inspects |
-| `G015` | doc obligation missing: migration → `docs/database.md`; sync jobs → `docs/background-jobs.md`; new domain → `docs/architecture.md` + `doc.go` |
+| `G015` | doc obligation missing: migration → database docs; job/sync changes → background-job docs; new domain → architecture docs + domain package docs |
 | `G016` | `graph.md` source hash does not match `tasks.md` |
 | `G017` | task id prefix does not match the enclosing node id |
 | `G018` | `check --diff` finds a changed file outside the union of the change's `Owns:` paths |
