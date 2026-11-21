@@ -1,3 +1,4 @@
+# task-graph — grammar, invariants and checker contract live in README.md beside this file.
 name: task-graph
 version: 1
 description: Spec-driven specs and design with an explicit, validated task graph
