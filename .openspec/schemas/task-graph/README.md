@@ -41,9 +41,7 @@ progress and archive gate are unchanged.
   renamed foreign key / id-holding column or payload field under the project's naming rule
 - Test scenarios — `TC-…` table with scenario, given, when, then; the spec deltas reference these ids
 - Risks / Trade-offs, Migration Plan
-- Docs to update — the database docs on a migration; the background-job docs on a job kind, sync
-  trigger, linked-sync rule or the activity feed; the architecture docs on a new domain, cross-domain
-  call, queue, task chain or term. Name the project's actual files.
+- Docs to update — every doc the change touches, at the project's paths; `none` when nothing changes
 - Open Questions
 
 Rules: code flow is explained with the `call-graph` skill; scenarios come from the `test-scenario`
@@ -197,7 +195,7 @@ checkboxes to sequential ids; the checker correlates by source `line`, never by 
 | `G012` | `Covers: all` on a non-gate node |
 | `G013` | `review`/`qa`/`human` gate without `Evidence:` |
 | `G014` | `review`/`qa` node does not depend on every implementation node it inspects |
-| `G015` | doc obligation missing: migration → database docs; job/sync changes → background-job docs; new domain → architecture docs + domain package docs |
+| `G015` | a path listed under Docs to update in `design.md` is not owned by any node |
 | `G016` | `graph.md` source hash does not match `tasks.md` |
 | `G017` | task id prefix does not match the enclosing node id |
 | `G018` | `check --diff` finds a changed file outside the union of the change's `Owns:` paths |
