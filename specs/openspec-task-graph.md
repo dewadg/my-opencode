@@ -6,6 +6,8 @@ tags: [openspec, graph, tasks, schema, workflow, validator, spec-driven]
 projects: [my-opencode, stocko, artifact]
 related:
   - ../../karambyte/stocko/.notes/2026-11-21-graph-engineering-openspec.md
+  - ../.openspec/schemas/task-graph/schema.yaml
+  - ../.openspec/schemas/task-graph/templates/tasks.md
 description: Task-graph schema for OpenSpec changes — group nodes, Depends on edges, Owns/Resource conflict sets, gates, computed layers and run batches, generated graph.md; no waves, no schema fork.
 ---
 
@@ -31,7 +33,8 @@ compute layers, pack run batches and render a view.
 - A validator with stable error codes, a `next` command that returns the runnable batch, and a
   generated visual.
 - Forward-only adoption: marked files are enforced; legacy and archived files are untouched.
-- No schema fork, no new artifact types; `proposal.md`, `design.md` and `specs/**` stay as they are.
+- A project-local OpenSpec schema package that carries the format, with the same artifact set as
+  `spec-driven`.
 
 ## Non-goals
 
@@ -40,6 +43,7 @@ compute layers, pack run batches and render a view.
 - A GUI, daemon or database; commands are read-only except `render`.
 - Rewriting archived changes.
 - Replacing OpenSpec's checkbox progress or archive gate.
+- New artifact types; `proposal.md`, `design.md` and `specs/**` keep their `spec-driven` content.
 
 ## Flow
 
@@ -100,11 +104,17 @@ flowchart LR
 - **Alternatives**: enforce everywhere (baseline noise, rewrites); a config flag (per-repo, not
   per-change).
 
-### D6: No schema fork
-- **Choice**: keep `schema: spec-driven`; `tasks.md` keeps its path, `apply.tracks` and checkboxes.
-- **Why**: the artifact DAG is fine for documents; only the content of the tasks artifact changes.
-- **Alternatives**: a `graph-driven` schema with `contracts.md`/`test-plan.md` (rejected — more
-  artifacts, no execution semantics gained).
+### D6: A project-local schema package with the same artifacts
+- **Choice**: ship `task-graph` as a project-local schema. It lives in
+  `.openspec/schemas/task-graph/` in the config repo and is copied to
+  `openspec/schemas/task-graph/` when a project adopts it. It declares the same four artifacts and
+  `requires` edges as `spec-driven`; only the `tasks` artifact and the `apply` instruction change.
+- **Why**: the format needs a home OpenSpec can resolve, and a fork with identical artifacts keeps
+  the document DAG unchanged. Names, templates and instructions travel with the schema instead of
+  being copied into every project's config.
+- **Alternatives**: no schema, only `rules.tasks` (no template, no apply instruction); new artifacts
+  `contracts.md`/`test-plan.md` (more ceremony, no execution semantics); engine patch (upstream
+  drift).
 
 ### D7: Review and QA are explicit nodes
 - **Choice**: `Gate: review` and `Gate: qa` nodes live in `tasks.md` with an `Evidence:` path.
@@ -294,6 +304,32 @@ Canonical parsed model (shared by all commands):
 - `graph.md` is committed and travels with the change when archived.
 - No change to `proposal.md`, `design.md` or `specs/**`.
 
+### 9. Schema package
+
+```
+.openspec/schemas/task-graph/
+  schema.yaml                 # same 4 artifacts and edges as spec-driven
+  templates/
+    proposal.md               # unchanged
+    spec.md                   # unchanged
+    design.md                 # unchanged
+    tasks.md                  # graph skeleton with the marker
+```
+
+- Source of truth in this repo: `.openspec/schemas/task-graph/`. OpenSpec resolves schemas at
+  `<project>/openspec/schemas/<name>/` and `openspec schema validate` reads `process.cwd()`; a
+  dot-directory is a staging area, not a discoverable root.
+- Adoption copies the directory to `openspec/schemas/task-graph/` in the project, then either
+  `openspec new change <name> --schema task-graph` per change or `schema: task-graph` in
+  `openspec/config.yaml` for a default.
+- `schema.yaml` uses only the keys the 1.16 loader accepts: `name`, `version`, `description`,
+  `artifacts[]` (`id`, `generates`, `description`, `template`, `instruction`, `requires`) and
+  `apply` (`requires`, `tracks`, `instruction`). Unknown keys are silently stripped, so no gate or
+  validator fields may be added there.
+- The package was validated with `openspec schema validate task-graph` against a scratch project:
+  exit 0, `openspec status` lists the four artifacts, `applyRequires: [tasks]`, and the tasks
+  instruction resolves to the graph grammar.
+
 ## Testing
 
 ### Pre-test requirements
@@ -317,6 +353,7 @@ Canonical parsed model (shared by all commands):
 | `graph.md` older than `tasks.md` | `render --check` | exit 1, hash mismatch |
 | file without the marker | `check` | skipped, not an error |
 | unmarked legacy `tasks.md` | `baseline` | counted, never fails |
+| schema package copied into `openspec/schemas/` | `openspec schema validate task-graph` | exit 0; four artifacts; `applyRequires: [tasks]`; tasks instruction carries the grammar |
 
 ## Open Questions
 
@@ -330,11 +367,12 @@ Canonical parsed model (shared by all commands):
 
 ## Todo
 
-Not started — this spec documents the format first. Wave headings below are this spec's delivery
-layers, not the change-task format described above.
+Schema package landed (`.openspec/schemas/task-graph/`). Validator and adoption are not started.
+Wave headings below are this spec's delivery layers, not the change-task format described above.
 
 ### Wave 1 — Parser and checker
-- [ ] [js-eng] Implement `bin/openspec-graph.mjs` parser + `check` with codes `G001–G015`, `verify` against fixtures — `test/fixtures/graph/`
+- [x] [js-eng] Package the `task-graph` schema and templates; validate with `openspec schema validate` — `.openspec/schemas/task-graph/`
+- [ ] [js-eng] Implement `bin/openspec-graph.mjs` parser + `check` with codes `G001–G015`, verify against fixtures — `test/fixtures/graph/`
 - [ ] [js-eng] Unit tests for every code and for the valid fixture — same directory
 
 ### Wave 2 — Compute and render
