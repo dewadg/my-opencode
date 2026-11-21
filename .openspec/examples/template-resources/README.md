@@ -12,7 +12,7 @@ A rewrite of the archived change at
   files. The edge makes that explicit.
 - Node 3 depends on 2 only. Listing 1 as well would be a transitive edge, because 2 already
   depends on 1.
-- Review and QA are `Gate` nodes with committed `Evidence:` files under `evidence/`, not prose-only
+- Review and QA are `Gate` nodes with scratch `Evidence:` files under `evidence/`, not prose-only
   last-wave groups and not `.notes/`.
 - `journal.md` is the apply-time decision log: entries are numbered `D1`, `D2`, ... and each names
   the node that made the decision.
@@ -21,6 +21,9 @@ A rewrite of the archived change at
   than in the change design.
 - Every task is `[x]`, matching the archived state, so the board shows every node done and no
   runnable batch.
+
+The two `evidence/*.md` files are kept only to show the report shape; in a real change that
+directory is gitignored and deleted before archive.
 
 `graph.md` is the plan snapshot: its `Source:` hash records which `tasks.md` produced it, and it
 shows the layers, coverage and critical path, not run state.

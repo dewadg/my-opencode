@@ -18,8 +18,8 @@ so inserting a node never renumbers the rest. Metadata lines must match the gram
   Owns: none | path, path
   Resource: db:test, port:8080           (optional; nodes sharing a tag never run together)
   Gate: unit | review | qa | human | none
-  Evidence: evidence/<file>.md            (required for review, qa and human; committed with
-                                          the change, never under .notes/)
+  Evidence: evidence/<file>.md            (required for review, qa and human; scratch output,
+                                          never committed, never archived)
 
 Tasks: `- [ ] <id>.<n> <text> Check: <command> Covers: <TC-... | all>`
 `Covers:` names ids from design.md's Test scenarios table; `all` is legal only on a review

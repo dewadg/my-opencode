@@ -198,9 +198,11 @@ artifacts:
       - `Resource: db:test, build` - optional non-file conflicts (database, port, browser,
         build cache). Nodes sharing a tag never run together.
       - `Gate: unit | review | qa | human | none` - default `unit`.
-      - `Evidence: evidence/<file>.md` - required for `review`, `qa` and `human`. The path
-        is relative to the change and committed with it; never `.notes/`, which is ignored
-        and dangles after archive.
+      - `Evidence: evidence/<file>.md` - required for `review`, `qa` and `human`. The path is
+        relative to the change, and the file is scratch: written while the gate verifies, read by
+        the planner, never committed and never archived. It is exactly `evidence/<name>.md` - no
+        `..`, no leading `/`, no other directory - and `.gitignore` carries
+        `openspec/changes/**/evidence/`.
 
       Tasks are `- [ ] <id>.<n> <text> Check: <command> Covers: <TC-...>`. The apply phase
       parses the checkbox: `[x]` is done; every other marker is unfinished. The id prefix
@@ -276,9 +278,9 @@ apply:
     2. The ready set is every node whose dependencies are done, in `(layer, id)` order,
        capped at 4 and never two nodes sharing an `Owns:` path or a `Resource:` tag.
     3. Hand each node to the agent named in its heading. Never code inline.
-    4. A node is done only when every task's `Check:` passes; gate evidence is committed
-       under `openspec/changes/<change>/evidence/`. Never tick a box to unblock downstream
-       work.
+    4. A node is done only when every task's `Check:` passes; gate evidence is written under
+       `openspec/changes/<change>/evidence/` while the gate verifies and is never committed.
+       Never tick a box to unblock downstream work.
     5. On failure write `(failed: reason)` on the task and return it to the same owner.
        Review findings reopen the implementation node; QA reruns only failed scenarios.
     6. Record decisions as they are made. Append each decision the plan did not make to
@@ -287,7 +289,9 @@ apply:
        reports a decision in its result and the orchestrator appends it. Number entries `D1`,
        `D2`, ... in order and never reuse a number; supersede a past entry with a new one that
        names it. A decision that changes a spec or design file updates that file in the same
-       node, and the entry names the path. Gate verdicts stay in `evidence/`.
+       node, and the entry names the path. A gate's verdict is written into `evidence/` while
+       the gate runs; a failing gate marks `(failed: ...)` in `tasks.md`, because the report is
+       deleted and only that marker survives.
 
     Pause on blockers or material ambiguity. Do not invent a task to satisfy a
     dependency, and do not start a blocked node because it looks independent. Project

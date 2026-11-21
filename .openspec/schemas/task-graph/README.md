@@ -26,6 +26,15 @@ or set it as the project default in `openspec/config.yaml`:
 schema: task-graph
 ```
 
+Either way, add both gate-evidence patterns to the project's `.gitignore` once, since a project may
+root its change dir at either `openspec/` or `.openspec/`. Evidence is scratch output, so it must
+never enter the repository:
+
+```
+openspec/changes/**/evidence/
+.openspec/changes/**/evidence/
+```
+
 Artifacts: `specs` and `design` are roots; `tasks` requires both; `graph` requires `tasks`.
 `apply.requires` is `[tasks]`, and `apply.tracks` stays `tasks.md`, so OpenSpec's checkbox progress
 and archive gate are unchanged. The `graph` artifact is kept for the template, but `graph.md` is a
@@ -75,7 +84,7 @@ Depends on: <none | id, id, …>
 Owns: <none | path, path, …>
 Resource: <tag, tag, …>                    # optional
 Gate: <unit | review | qa | human | none>  # optional, default unit
-Evidence: evidence/<file>.md               # required for review, qa, human
+Evidence: evidence/<file>.md               # required for review, qa, human; scratch, never committed
 
 - [ ] <id>.<n> <text> Check: <command> Covers: <TC-…, TC-… | all>
 ```
@@ -88,7 +97,8 @@ Evidence: evidence/<file>.md               # required for review, qa, human
 - `Resource:` names non-file conflicts (`db:test`, `port:8080`, `build`). Nodes sharing a tag never
   run together.
 - `Gate:` marks the node type. `review`, `qa` and `human` require `Evidence:`.
-- `Evidence:` points inside the change at `evidence/<file>.md`; see [Evidence](#evidence).
+- `Evidence:` points inside the change at `evidence/<file>.md`. It names scratch output, written
+  while the gate verifies and never committed; see [Evidence](#evidence).
 - `Covers: all` is legal only on `review` and `qa` gates.
 - Checkbox parsing follows OpenSpec: `[x]` is done; every other marker is unfinished.
 - `Check:` is split from `Covers:` on the last ` Covers: `; the text before it contains exactly one
@@ -165,23 +175,33 @@ checkboxes to sequential ids, so correlate by line, never by that id.
 
 ## Evidence
 
-Gate evidence lives at `openspec/changes/<change>/evidence/<file>.md`, relative to the change
-directory, and is committed with the change. `.notes/` is git-ignored, so evidence stored there never
-reaches the commit or the archive. The path must be exactly `evidence/<name>.md`: no `..`, no leading
-`/`, no other directory.
+Gate evidence is scratch. The gate's agent writes it at
+`openspec/changes/<change>/evidence/<file>.md`, relative to the change directory, the planner reads
+it during apply, and it exists nowhere else: never committed, never archived. The path must be
+exactly `evidence/<name>.md`: no `..`, no leading `/`, no other directory.
 
-A report is prose the planner reads, not a machine artifact. The only marker anything looks for is a
-literal `(failed: …)`, which puts the node in `failed`.
+- The project's `.gitignore` carries `openspec/changes/**/evidence/`, and the applying orchestrator
+  deletes `evidence/` before archiving the change, so the repository never carries it.
+- A report is prose the planner reads, not a machine artifact. The `evidence/` directory may hold
+  screenshots, HTML dumps and other binaries, which is exactly why it is not persisted; the named
+  `evidence/<file>.md` is the prose index the planner reads.
+- The durable record of a gate is `tasks.md`, not the report: the `[x]` tick, and `(failed: reason)`
+  on the task line for a failure. A failing gate must write that marker: a report alone is deleted,
+  so a verdict that exists only in `evidence/` does not survive.
+- After archive, `Evidence:` lines are historical pointers whose targets are gone by design. Do not
+  rewrite, remove or renumber them.
 
 ## Journal
 
 Apply-time decisions live at `openspec/changes/<change>/journal.md`, relative to the change,
-committed with it and archived with it like `evidence/`. It is not an artifact: OpenSpec does not
-generate it, list it or gate on it, and `apply.tracks` stays `tasks.md`.
+committed and archived with it, unlike `evidence/`, which is scratch and never committed. It is
+not an artifact: OpenSpec does not generate it, list it or gate on it, and `apply.tracks` stays
+`tasks.md`.
 
 `design.md` holds the decisions made before apply. The journal holds the ones apply forces: a
 library or interface choice the design left open, a deviation from `design.md`, a discovery that
-changes how a node executes. Gate verdicts still belong in `evidence/`.
+changes how a node executes. A gate's verdict is written into `evidence/` while the gate runs; the
+record that survives is the `tasks.md` marker.
 
 ```markdown
 <!-- openspec-journal: 1 -->
@@ -272,6 +292,8 @@ line breaks in a title.
   `operations.apply.guidance`, because `rules` is injected only into `instructions <artifact>`. The
   schema's own `apply.instruction` stays short and points there.
 - `graph.md` is committed and travels with the change when archived; it is never regenerated.
+- `evidence/` never travels with the change: it is gitignored, and deleted before archive, so
+  `Evidence:` lines in an archived change point at files that are gone.
 - Only the loader keys OpenSpec 1.16 accepts are used in `schema.yaml`: `name`, `version`,
   `description`, `artifacts[]` (`id`, `generates`, `description`, `template`, `instruction`,
   `requires`) and `apply` (`requires`, `tracks`, `instruction`). Unknown keys are silently stripped,

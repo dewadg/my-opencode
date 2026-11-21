@@ -87,6 +87,9 @@ tasks one per line:
 <glyph> 2.1 <task text> · Covers: TC-…, TC-…
 ```
 
+Evidence is scratch, so its file may already be gone after archive or cleanup; print the path as
+written anyway.
+
 ## Rules
 
 - The file is the truth. If the marker is missing or `tasks.md` does not exist, say so and stop —
