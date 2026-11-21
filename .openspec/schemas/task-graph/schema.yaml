@@ -281,6 +281,13 @@ apply:
        work.
     5. On failure write `(failed: reason)` on the task and return it to the same owner.
        Review findings reopen the implementation node; QA reruns only failed scenarios.
+    6. Record decisions as they are made. Append each decision the plan did not make to
+       `openspec/changes/<change>/journal.md`: what was chosen, the alternative rejected and
+       why, and what it changes. The applying orchestrator is the only writer - a node's agent
+       reports a decision in its result and the orchestrator appends it. Number entries `D1`,
+       `D2`, ... in order and never reuse a number; supersede a past entry with a new one that
+       names it. A decision that changes a spec or design file updates that file in the same
+       node, and the entry names the path. Gate verdicts stay in `evidence/`.
 
     Pause on blockers or material ambiguity. Do not invent a task to satisfy a
     dependency, and do not start a blocked node because it looks independent. Project

@@ -2,7 +2,8 @@
 
 An OpenSpec workflow schema that replaces the flat task checklist with an explicit work graph.
 `specs` is unchanged from `spec-driven`; `design` carries the project's design rules;
-`proposal.md` is dropped; `tasks.md` is the graph and `graph.md` is its one-shot snapshot.
+`proposal.md` is dropped; `tasks.md` is the graph, `graph.md` is its one-shot snapshot, and
+`journal.md` is the apply-time decision log.
 
 ## Install
 
@@ -172,6 +173,35 @@ reaches the commit or the archive. The path must be exactly `evidence/<name>.md`
 A report is prose the planner reads, not a machine artifact. The only marker anything looks for is a
 literal `(failed: …)`, which puts the node in `failed`.
 
+## Journal
+
+Apply-time decisions live at `openspec/changes/<change>/journal.md`, relative to the change,
+committed with it and archived with it like `evidence/`. It is not an artifact: OpenSpec does not
+generate it, list it or gate on it, and `apply.tracks` stays `tasks.md`.
+
+`design.md` holds the decisions made before apply. The journal holds the ones apply forces: a
+library or interface choice the design left open, a deviation from `design.md`, a discovery that
+changes how a node executes. Gate verdicts still belong in `evidence/`.
+
+```markdown
+<!-- openspec-journal: 1 -->
+# Journal — <change>
+
+## D1 · node 2 · <decision title>
+Date: 2026-11-21 · Owner: <agent>
+Decided: <what was chosen and why>.
+Rejected: <alternative> — <why it lost>.
+Effect: <none | spec/<path>, design.md, <contract path>, task <id>.<n>>.
+```
+
+- One writer: the applying orchestrator appends. Nodes may run in parallel, so a node's agent
+  reports the decision in its result and never edits the file itself.
+- Entries are `D1`, `D2`, ... in order. Never reuse a number and never edit a past entry:
+  supersede it with a new one carrying `Supersedes: D<n>`.
+- One entry per decision, no narration, no diffs. A decision that changes a spec or design file
+  updates that file in the same node; the entry names the path.
+- A node that made no decision adds no entry.
+
 ## Planning rules
 
 - **Parallelism.** Add an edge only when the dependent cannot pass a `Check:` without the
@@ -234,6 +264,10 @@ line breaks in a title.
 - `tasks.md` stays at `openspec/changes/<change>/tasks.md`; `apply.tracks` and checkbox progress are
   unchanged.
 - `openspec validate --archived` remains the completion gate.
+- `journal.md` is apply-time output, not an artifact and not a tracked task file: `openspec status`,
+  `validate` and archive's task gate ignore it, and it travels with the change when archived. The
+  rule lives in `apply.instruction` because it is workflow grammar, not project doctrine;
+  `operations.apply.guidance` still extends it per project.
 - `openspec/config.yaml` `rules.tasks` describes the grammar; apply-time doctrine goes in
   `operations.apply.guidance`, because `rules` is injected only into `instructions <artifact>`. The
   schema's own `apply.instruction` stays short and points there.
