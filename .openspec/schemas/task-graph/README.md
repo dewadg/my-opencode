@@ -7,12 +7,19 @@ An OpenSpec workflow schema that replaces the flat task checklist with an explic
 
 ## Install
 
-OpenSpec resolves schemas at `<project>/openspec/schemas/<name>/`. This directory is the staging
-copy; a dot-directory is not discoverable by the CLI, so install with a plain recursive copy.
+OpenSpec resolves schemas at `<project>/openspec/schemas/<name>/` first, then at
+`${XDG_DATA_HOME}/openspec/schemas/<name>/` (`~/.local/share` on Unix). This directory is the
+staging copy; a dot-directory is not discoverable by the CLI, so install with a plain recursive
+copy — project-local by default, or user-level for every project:
 
 ```bash
 cp -R <this-directory> <project>/openspec/schemas/task-graph
+cp -R <this-directory> "${XDG_DATA_HOME:-$HOME/.local/share}/openspec/schemas/task-graph"
 ```
+
+A user-level copy serves every project and is overridden by a project-local one. Confirm with
+`openspec schemas`: it lists `task-graph`, annotated `(user override)` when the userspace copy is
+the one resolved.
 
 Then either:
 
