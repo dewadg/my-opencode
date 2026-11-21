@@ -237,7 +237,7 @@ Errors (exit 1):
 | `G007` | malformed `Depends on:` (wave, group, range, prose) |
 | `G008` | duplicate task id inside a node |
 | `G009` | task without `Check:` or without `Covers:` |
-| `G010` | `Covers:` names a TC absent from `design.md` |
+| `G010` | `Covers:` names a TC absent from `design.md` and the main specs (`openspec/specs/**/spec.md`) |
 | `G011` | a TC in `design.md` is covered by no node |
 | `G012` | `Covers: all` on a non-gate node |
 | `G013` | `review`/`qa`/`human` gate without `Evidence:` |
