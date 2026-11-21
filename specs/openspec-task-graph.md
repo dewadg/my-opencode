@@ -176,7 +176,7 @@ Nodes may appear in any order; ids must be continuous from 1. `# Tasks` is the o
 | `Resource:` | no | tag (`, ` tag)*; tag `[a-z][a-z0-9:-]*` | none | malformed tag |
 | `Gate:` | no | `unit` \| `review` \| `qa` \| `human` \| `none` | `unit` | unknown value |
 | `Evidence:` | gate ≠ unit | repo-relative path | — | missing path for review/qa/human |
-| task | ≥1 per node | `- [ ] <id>.<n> <text> Check: <cmd> Covers: <ids>` | — | missing `Check:`, missing `Covers:`, duplicate task id |
+| task | ≥1 per node | `- [ ] <id>.<n> <text> Check: <cmd> Covers: <ids>`; the prefix must equal the enclosing node id | — | missing `Check:`, missing `Covers:`, duplicate task id, prefix mismatched to the node |
 
 Task line parsing: split on the **last** occurrence of ` Covers: `; the text before it must contain
 exactly one ` Check: `, which splits the description from the command. Backticks around a command are
@@ -189,6 +189,12 @@ Transitive dependencies are implicit; listing a transitive dependency is warning
 
 **Layers.** `layer(n) = 1 + max(layer(dep))`; roots are layer 1. Computed, never written.
 
+**Correlation.** The task id prefix is the join key: node `N` owns every `- [ ] N.x` line in its
+block. The parser scopes a node from its `###` heading to the next node heading and errors when a
+task's prefix differs (`G017`). `graph.md` names the range per node, `next` returns node ids, and the
+node state is the aggregate of its tasks. OpenSpec flattens checkboxes to sequential ids, so the CLI
+correlates to them by source `line`, never by id.
+
 **States.**
 
 | State | Condition |
@@ -196,7 +202,7 @@ Transitive dependencies are implicit; listing a transitive dependency is warning
 | `blocked` | some dependency is not `done` |
 | `ready` | dependencies `done`, no task touched |
 | `running` | some task `[x]`, or a task carries `(blocked: …)` |
-| `done` | every task `[x]` and the gate is satisfied |
+| `done` | every `<id>.<n>` task `[x]` and the gate is satisfied |
 | `failed` | a task carries `(failed: …)`, or the gate evidence records a failure |
 | `skipped` | heading carries `(skipped: <reason>)`; its boxes tick with the same reason |
 
@@ -238,6 +244,7 @@ Errors (exit 1):
 | `G014` | `review`/`qa` node does not depend on every implementation node it inspects |
 | `G015` | doc obligation missing: migration → `docs/database.md`; sync jobs → `docs/background-jobs.md`; new domain → `docs/architecture.md` + `doc.go` |
 | `G016` | `graph.md` source hash does not match `tasks.md` |
+| `G017` | task id prefix does not match the enclosing node id |
 
 Warnings (exit 0): `W001` redundant transitive dependency; `W002` node always deferred by an
 `Owns:`/`Resource:` clash; `W003` node depends on a higher id (readability only).
@@ -255,9 +262,10 @@ Fifth artifact of the schema: `generates: graph.md`, `requires: [tasks]`, listed
 Source: tasks.md@<sha256-of-tasks.md, first 12 hex> · Nodes: N · Edges: E · Layers: L · Ready: R
 ```
 
-Required sections, in order: `## Graph` (Mermaid flowchart), `## Layers` (table: layer, node, owner,
-gate, depends on, state), `## Next batch` (table: node, owner, why, feeds; plus deferred and blocked
-lines), `## Conflicts` (pairs: owns, resource, max), `## Coverage` (TC → nodes), `## Critical path`.
+Required sections, in order: `## Graph` (Mermaid flowchart), `## Layers` (table: layer, node, task
+range, owner, gate, depends on, state), `## Next batch` (table: node, owner, why, feeds; plus
+deferred and blocked lines), `## Conflicts` (pairs: owns, resource, max), `## Coverage` (TC → nodes),
+`## Critical path`. The task range (`2.1–2.4`) is the node-to-task join key.
 
 Determinism: nodes sorted by id, edges by `(from, to)`, tables by id, so `render --check` produces an
 empty diff when nothing changed. Mermaid labels are quoted, `;` and `#` stripped, `end` never used as

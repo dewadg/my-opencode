@@ -190,6 +190,9 @@ artifacts:
 
       Tasks are `- [ ] <id>.<n> <text> Check: <command> Covers: <TC-...>`. The apply
       phase parses the checkbox: `[x]` is done; every other marker is unfinished.
+      The id prefix must equal the node id: node 2 owns 2.1, 2.2, and so on. A task
+      whose prefix names another node is an error, and that prefix is the only
+      correlation between a graph node and its tasks.
       - `Check:` states how to prove the task, with the command and its expected exit.
       - `Covers:` names the `design.md` TC ids; `all` is legal only on a review or QA
         gate. Every TC in design.md must be covered by at least one node.

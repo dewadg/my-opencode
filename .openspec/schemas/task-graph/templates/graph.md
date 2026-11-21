@@ -23,9 +23,9 @@ Rectangle = work node, hexagon = gate. Green done, blue ready, grey dashed block
 
 ## Layers
 
-| Layer | Node | Owner | Gate | Depends on | State |
-|---|---|---|---|---|---|
-| <!-- 1 --> | <!-- 1. Node title --> | <!-- agent --> | <!-- unit --> | <!-- none --> | <!-- ready --> |
+| Layer | Node | Tasks | Owner | Gate | Depends on | State |
+|---|---|---|---|---|---|---|
+| <!-- 1 --> | <!-- 1. Node title --> | <!-- 1.1–1.3 --> | <!-- agent --> | <!-- unit --> | <!-- none --> | <!-- ready --> |
 
 ## Next batch
 
