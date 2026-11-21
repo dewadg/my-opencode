@@ -6,18 +6,19 @@ A rewrite of the archived change at
 
 ## What changed
 
-- `## Wave 1` / `## Wave 2` removed. The two waves became edges: node 2 now depends on node 1, and
-  nodes 4 and 5 depend on 1, 2 and 3.
+- `## Wave 1` / `## Wave 2` removed. The two waves became edges: node 2 depends on node 1,
+  node 3 depends on node 2, and gates 4 and 5 depend on 1, 2 and 3.
 - Node 2's original `Depends on: nothing` was not accurate for completion: its tests read node 1's
   files. The edge makes that explicit.
-- Review and QA are `Gate` nodes with `Evidence:` paths instead of prose-only last-wave groups.
+- Node 3 depends on 2 only. Listing 1 as well would be a transitive edge, because 2 already
+  depends on 1.
+- Review and QA are `Gate` nodes with committed `Evidence:` files under `evidence/`, not prose-only
+  last-wave groups and not `.notes/`.
 - The original `TC-830` reference is kept. It is not in this change's `design.md`; it resolves from
-  `openspec/specs/authoring-guide/spec.md`, so the checker must read the main specs as well as the
-  change design.
-- Every task is `[x]`, matching the archived state. The graph therefore shows all nodes done and an
-  empty next batch.
+  `openspec/specs/authoring-guide/spec.md`, so a plan may cite a TC that lives in a main spec rather
+  than in the change design.
+- Every task is `[x]`, matching the archived state, so the board shows every node done and no
+  runnable batch.
 
-`graph.md` is hand-rendered from `tasks.md` because `openspec-graph render` is not implemented yet.
-Its `Source:` hash matches the file above. Gate `Evidence:` paths point into the original repo's
-`.notes/`; this example does not carry the review and QA reports, so a real checker run would need
-them before treating those gates as satisfied.
+`graph.md` is the plan snapshot: its `Source:` hash records which `tasks.md` produced it, and it
+shows the layers, coverage and critical path, not run state.

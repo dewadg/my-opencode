@@ -2,12 +2,12 @@
 
 An OpenSpec workflow schema that replaces the flat task checklist with an explicit work graph.
 `specs` is unchanged from `spec-driven`; `design` carries the project's design rules;
-`proposal.md` is dropped; `tasks.md` is the graph and `graph.md` is its generated view.
+`proposal.md` is dropped; `tasks.md` is the graph and `graph.md` is its one-shot snapshot.
 
 ## Install
 
 OpenSpec resolves schemas at `<project>/openspec/schemas/<name>/`. This directory is the staging
-copy; a dot-directory is not discoverable by the CLI.
+copy; a dot-directory is not discoverable by the CLI, so install with a plain recursive copy.
 
 ```bash
 cp -R <this-directory> <project>/openspec/schemas/task-graph
@@ -26,8 +26,12 @@ schema: task-graph
 ```
 
 Artifacts: `specs` and `design` are roots; `tasks` requires both; `graph` requires `tasks`.
-`apply.requires` is `[tasks, graph]`, and `apply.tracks` stays `tasks.md`, so OpenSpec's checkbox
-progress and archive gate are unchanged.
+`apply.requires` is `[tasks]`, and `apply.tracks` stays `tasks.md`, so OpenSpec's checkbox progress
+and archive gate are unchanged. The `graph` artifact is kept for the template, but `graph.md` is a
+plan snapshot — it is written once, right after `tasks.md`, and nothing gates on it.
+
+The `task-graph` skill draws the plan as the board below. It is the standard view; nothing else
+reads `tasks.md`.
 
 ## Design artifact
 
@@ -39,7 +43,9 @@ progress and archive gate are unchanged.
 - Decisions
 - Shared contracts — types, interfaces, migrations, API shapes, packages touched, and every new or
   renamed foreign key / id-holding column or payload field under the project's naming rule
-- Test scenarios — `TC-…` table with scenario, given, when, then; the spec deltas reference these ids
+- Test scenarios — `TC-…` table with scenario, given, when, then. Each row cites the requirement
+  name it proves; the spec deltas cite requirement names, never `TC-…` ids, because `specs` and
+  `design` are both roots and a delta's id reference could name a row that does not exist yet
 - Risks / Trade-offs, Migration Plan
 - Docs to update — every doc the change touches, at the project's paths; `none` when nothing changes
 - Open Questions
@@ -57,7 +63,8 @@ First line, exact:
 <!-- openspec-graph: 1 -->
 ```
 
-A file without the marker is ignored by the checker; legacy and archived changes are never parsed.
+A file without the marker is not a plan; nothing reads it, and legacy or archived changes are left
+alone.
 
 ```
 # Tasks
@@ -67,24 +74,27 @@ Depends on: <none | id, id, …>
 Owns: <none | path, path, …>
 Resource: <tag, tag, …>                    # optional
 Gate: <unit | review | qa | human | none>  # optional, default unit
-Evidence: <repo-relative path>             # required for review, qa, human
+Evidence: evidence/<file>.md               # required for review, qa, human
 
 - [ ] <id>.<n> <text> Check: <command> Covers: <TC-…, TC-… | all>
 ```
 
-- Node ids are continuous from 1; task ids are prefixed by their node id. Node `2` owns `2.1`, `2.2`.
-- `Depends on:` names node ids only. Waves, groups, ranges and prose are errors.
+- Node ids are unique positive integers. Gaps are allowed: inserting a node never renumbers the
+  rest, so existing ids stay stable for evidence and TC references.
+- Task ids are prefixed by their node id. Node `2` owns `2.1`, `2.2`.
+- `Depends on:` names node ids only. Waves, groups, ranges and prose are not edges.
 - `Owns:` lists every file the node writes.
 - `Resource:` names non-file conflicts (`db:test`, `port:8080`, `build`). Nodes sharing a tag never
   run together.
 - `Gate:` marks the node type. `review`, `qa` and `human` require `Evidence:`.
+- `Evidence:` points inside the change at `evidence/<file>.md`; see [Evidence](#evidence).
 - `Covers: all` is legal only on `review` and `qa` gates.
 - Checkbox parsing follows OpenSpec: `[x]` is done; every other marker is unfinished.
 - `Check:` is split from `Covers:` on the last ` Covers: `; the text before it contains exactly one
   ` Check: `.
 
 `Owns:` paths are comma-separated. `Depends on:` and `Covers:` are comma-separated. Fenced code
-blocks are ignored by the parser.
+blocks are ignored when the file is read.
 
 ### Example
 
@@ -112,15 +122,15 @@ Gate: unit
 Depends on: 1, 2
 Owns: none
 Gate: review
-Evidence: .notes/add-order-export/review-round-1.md
+Evidence: evidence/review-round-1.md
 
 - [ ] 3.1 `make test` and `make lint` exit 0; findings by file and severity. Covers: all
 ```
 
 ## Semantics
 
-**Edges.** `Depends on:` is the only edge source. A node may start when every dependency is `done`.
-Transitive dependencies are implicit.
+**Edges.** `Depends on:` is the only edge source. A node may start when every dependency is `done`
+or `skipped`. Transitive dependencies are implicit.
 
 **Layers.** `layer(n) = 1 + max(layer(dep))`; roots are layer 1. Computed, never written.
 
@@ -128,30 +138,39 @@ Transitive dependencies are implicit.
 
 | State | Condition |
 |---|---|
-| `blocked` | some dependency is not `done` |
-| `ready` | dependencies `done`, no task touched |
-| `running` | some task `[x]`, or a task carries `(blocked: …)` |
-| `done` | every `<id>.<n>` task `[x]` and the gate is satisfied |
-| `failed` | a task carries `(failed: …)`, or gate evidence records a failure |
+| `blocked` | some dependency is not `done` or `skipped` |
+| `ready` | dependencies `done`, no task ticked |
+| `running` | some tasks ticked and some not |
+| `done` | every `<id>.<n>` task `[x]`; vacuously true for a node with no tasks |
+| `failed` | a task, or the node's gate evidence, carries `(failed: …)` |
 | `skipped` | heading carries `(skipped: <reason>)`; boxes tick with the same reason |
 
-**Batches.** The ready set is packed deterministically:
+**Ready set.** The board's `next:` footer lists the ready nodes in `(layer, id)` order, capped at 4
+and skipping a node that shares an `Owns:` path or a `Resource:` tag with one already listed:
 
 ```
-ready = nodes with state == ready
-batch = []
 for node in ready sorted by (layer, id):
-    if len(batch) == max:               defer(node, "max")
+    if len(batch) == 4:                 defer(node, "max")
     elif owns_overlap(node, batch):     defer(node, "owns")
     elif resource_overlap(node, batch): defer(node, "resource")
     else: batch.append(node)
 ```
 
 `owns_overlap` compares resolved paths: equal, directory prefix, or the same Go package directory.
-Default `max` is 4. A deferred node is eligible, not blocked.
+A deferred node is eligible, not blocked.
 
 **Correlation.** The task id prefix is the join key between a node and its tasks. OpenSpec flattens
-checkboxes to sequential ids; the checker correlates by source `line`, never by that id.
+checkboxes to sequential ids, so correlate by line, never by that id.
+
+## Evidence
+
+Gate evidence lives at `openspec/changes/<change>/evidence/<file>.md`, relative to the change
+directory, and is committed with the change. `.notes/` is git-ignored, so evidence stored there never
+reaches the commit or the archive. The path must be exactly `evidence/<name>.md`: no `..`, no leading
+`/`, no other directory.
+
+A report is prose the planner reads, not a machine artifact. The only marker anything looks for is a
+literal `(failed: …)`, which puts the node in `failed`.
 
 ## Planning rules
 
@@ -163,106 +182,52 @@ checkboxes to sequential ids; the checker correlates by source `line`, never by 
   its checks with only its ancestors' work in the tree. Tests and docs for a node's behavior land in
   that node, never in a final catch-all.
 - **Shared files.** If two nodes must write the same file, merge them or extract the file into an
-  earlier contract node.
+  earlier contract node. Two ready nodes sharing an `Owns:` path is a planning defect, not a runtime
+  condition.
 - **Gates.** Review and QA nodes verify only; they do not fix. Findings reopen the owning node.
-
-## Checker contract
-
-`bin/openspec-graph` — Node, no runtime dependencies. Planned; not implemented.
-
-| Command | Output | Exit |
-|---|---|---|
-| `check <change> [--changed] [--diff [--base <ref>]] [--json]` | `{errors, warnings}`; `--diff` adds `G018` | 1 on errors |
-| `next <change> [--max N] [--explain] [--json]` | `{batch, deferred, blocked, ready}` | 0, or 1 without a marker |
-| `render <change> [--check]` | writes `graph.md`, or diffs | 1 on drift or parse error |
-| `baseline [--archived] [--json]` | counts per code over unmarked files | 0 |
-
-### Errors
-
-| Code | Condition |
-|---|---|
-| `G001` | unknown marker version |
-| `G002` | malformed node heading |
-| `G003` | duplicate or non-continuous node id |
-| `G004` | missing `Depends on:` or `Owns:` |
-| `G005` | dependency names an unknown node |
-| `G006` | cycle |
-| `G007` | malformed `Depends on:` (wave, group, range, prose) |
-| `G008` | duplicate task id inside a node |
-| `G009` | task without `Check:` or without `Covers:` |
-| `G010` | `Covers:` names a TC absent from `design.md` and the main specs (`openspec/specs/**/spec.md`) |
-| `G011` | a TC in `design.md` is covered by no node |
-| `G012` | `Covers: all` on a non-gate node |
-| `G013` | `review`/`qa`/`human` gate without `Evidence:` |
-| `G014` | `review`/`qa` node does not depend on every implementation node it inspects |
-| `G015` | a path listed under Docs to update in `design.md` is not owned by any node |
-| `G016` | `graph.md` source hash does not match `tasks.md` |
-| `G017` | task id prefix does not match the enclosing node id |
-| `G018` | `check --diff` finds a changed file outside the union of the change's `Owns:` paths |
-
-### Warnings
-
-| Code | Condition |
-|---|---|
-| `W001` | redundant transitive dependency |
-| `W002` | node always deferred by an `Owns:`/`Resource:` clash |
-| `W003` | node depends on a higher id (readability only) |
-| `W004` | fully serial graph: four or more nodes and every layer has width 1 |
-| `W005` | edge without a visible contract |
-| `W006` | node has no behavioral check and `Gate` is not `none` |
-| `W007` | `Gate: unit` node covers no TC |
-| `W008` | `Owns:` path shared by two nodes where neither is an ancestor of the other |
-| `W009` | a task `Check:` names a path owned by a node that is not an ancestor |
 
 ## `graph.md`
 
-`openspec/changes/<change>/graph.md`, generated by `render`, committed, never edited. It is a view,
-not a source of truth.
+`openspec/changes/<change>/graph.md`, written once after `tasks.md`, committed, never edited and
+never regenerated. It is a plan snapshot, not a live view: `tasks.md` changes during apply, and a
+re-render would pin the snapshot to the hottest file in the change.
 
 ```
-<!-- generated by openspec-graph render; do not edit -->
+<!-- plan snapshot; do not edit -->
 # Graph — <change>
-Source: tasks.md@<sha256 first 12 hex> · Nodes: N · Edges: E · Layers: L · Width: W · Ratio: R · Ready: N
+
+Source: tasks.md@<sha256 first 12 hex> · <N> nodes · <L> layers · <E> edges
 ```
 
-Required sections, in order:
+then the board as one fenced block, then `## Coverage`. The `Source:` hash is provenance only — it
+records which `tasks.md` the snapshot came from.
 
-- `## Graph` — Mermaid `flowchart LR`; rectangle = node, hexagon = gate; green done, blue ready, grey
-  dashed blocked.
-- `## Layers` — table: layer, node, task range, owner, gate, depends on, state.
-- `## Next batch` — table: node, owner, why, feeds; plus deferred and blocked lines.
-- `## Conflicts` — pairs: owns, resource, max.
-- `## Coverage` — TC → nodes.
-- `## Critical path`.
-- `## Warnings` — optional; code, node, detail.
+Board grammar:
 
-`Width` is the largest layer; `Ratio` is `nodes / critical-path length`. Determinism: nodes by id,
-edges by `(from, to)`, tables by id, so `render --check` produces an empty diff when nothing changed.
-Mermaid labels are quoted, `;` and `#` stripped, `end` never used as an id.
+- Header: `<change> · <N> nodes · <L> layers · <R> ready · <U> running · <B> blocked`. Zero state
+  counts are omitted; nodes and layers always print.
+- One line per node, sorted by `(layer, id)`. `L<n>` sits in a 4-column left field, printed only on
+  the first row of its layer and blank on continuation rows.
+- Columns: state glyph, id, title, owner, tasks done/total, `←` dependencies (`←None` for roots),
+  and a `{gate}` tag for `review`, `qa` and `human` nodes only.
+- Glyphs: `▪` ready, `▸` running, `✓` done, `⊘` blocked, `✕` failed, `—` skipped.
+- Titles truncate to 36 characters with `…`; the owner column pads to the longest owner; a row stays
+  within 80 columns, dropping the gate tag first and the dependencies only if it still overflows.
+- Footer: `next: … · deferred: … · blocked: … · critical path 1→2→3`, `none` where empty.
 
-## Parsed model
-
-```json
-{
-  "schema": 1,
-  "change": "add-order-export",
-  "sourceHash": "7f3a1c9d2b04",
-  "nodes": [{
-    "id": 1,
-    "title": "Migration and entity",
-    "owner": "golang-eng",
-    "dependsOn": [],
-    "owns": ["internal/pkg/entity/export.go"],
-    "resources": ["db:test"],
-    "gate": "unit",
-    "evidence": null,
-    "layer": 1,
-    "state": "ready",
-    "tasks": [{"id": "1.1", "text": "…", "check": "…", "covers": ["TC-101"], "done": false}]
-  }],
-  "edges": [{"from": 1, "to": 2}]
-}
+```text
+glab50-template-resources · 5 nodes · 4 layers
+L1  ✓ 1  Template content                js-eng          6/6  ←None
+L2  ✓ 2  Registry, resources and tests   golang-eng      4/4  ←1
+L3  ✓ 3  Guide list and docs             api-documenter  2/2  ←2
+L4  ✓ 4  Review                          code-reviewer   1/1  ←1,2,3   {review}
+    ✓ 5  Render and publish              qa-eng          3/3  ←1,2,3   {qa}
+next: none · deferred: none · blocked: none · critical path 1→2→3→4
 ```
+
+No ANSI colour, and the same `tasks.md` draws the same board. `## Coverage` maps each `TC-…` to the
+nodes that name it under `Covers:`; table cells keep `\|` escaping, while the board only collapses
+line breaks in a title.
 
 ## Integration
 
@@ -270,8 +235,9 @@ Mermaid labels are quoted, `;` and `#` stripped, `end` never used as an id.
   unchanged.
 - `openspec validate --archived` remains the completion gate.
 - `openspec/config.yaml` `rules.tasks` describes the grammar; apply-time doctrine goes in
-  `operations.apply.guidance`, because `rules` is injected only into `instructions <artifact>`.
-- `graph.md` is committed and travels with the change when archived.
+  `operations.apply.guidance`, because `rules` is injected only into `instructions <artifact>`. The
+  schema's own `apply.instruction` stays short and points there.
+- `graph.md` is committed and travels with the change when archived; it is never regenerated.
 - Only the loader keys OpenSpec 1.16 accepts are used in `schema.yaml`: `name`, `version`,
   `description`, `artifacts[]` (`id`, `generates`, `description`, `template`, `instruction`,
   `requires`) and `apply` (`requires`, `tracks`, `instruction`). Unknown keys are silently stripped,

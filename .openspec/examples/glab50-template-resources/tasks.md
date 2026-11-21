@@ -25,7 +25,7 @@ Gate: unit
 - [x] 2.4 `internal/mcpserver` tests: listing includes the seven templates with description and MIME; reading returns non-empty bytes; the guide resources are unchanged; the tool count stays 12. Check: `go test -race ./internal/mcpserver/...` exits 0. Covers: TC-833, TC-834
 
 ### 3. Guide list and docs — api-documenter
-Depends on: 1, 2
+Depends on: 2
 Owns: guides/design.md, docs/mcp.md
 Gate: unit
 
@@ -36,7 +36,7 @@ Gate: unit
 Depends on: 1, 2, 3
 Owns: none
 Gate: review
-Evidence: .notes/glab50-template-resources/review-round-1.md
+Evidence: evidence/review-round-1.md
 
 - [x] 4.1 Review the diff: registry ordering, MIME correctness, the embed path, the tests' independence from the working directory, the template rules, and the guide/registry comparison. Check: findings in the severity-tagged format; must-fixes go back to the owning node. Covers: all
 
@@ -44,7 +44,7 @@ Evidence: .notes/glab50-template-resources/review-round-1.md
 Depends on: 1, 2, 3
 Owns: none
 Gate: qa
-Evidence: .notes/glab50-template-resources/qa-report.md
+Evidence: evidence/qa-report.md
 
 - [x] 5.1 On local dev, write the seven templates into a fresh project and publish; open the canvas and confirm each board at its intended size: dashboard 1440×900, mobile 390×844, components at 1440×900, no horizontal overflow, notes placed, `launch` on `desktop`. Check: screenshots at both sizes and a console log with no error. Covers: TC-835, TC-837
 - [x] 5.2 Switch `?state=` through default, empty, loading and error on both boards and confirm each is distinct and labelled. Check: four screenshots per board, or a stated gap. Covers: TC-830

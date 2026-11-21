@@ -1,4 +1,4 @@
-# task-graph — grammar, invariants and checker contract live in README.md beside this file.
+# task-graph — grammar, invariants and the board format live in README.md beside this file.
 name: task-graph
 version: 1
 description: Spec-driven specs and design with an explicit, validated task graph
@@ -145,7 +145,7 @@ artifacts:
       - **Flow**: A mermaid diagram when a flow, schema or state changes. Keep it IDE-safe: only flowchart, sequenceDiagram, stateDiagram-v2 or erDiagram; quote labels with punctuation; no `;`, `#` or `<...>` in sequence messages; never `end` as an id. Validate with `mmdc` when installed.
       - **Decisions**: Key technical choices with rationale (why X over Y?). Include alternatives considered for each decision.
       - **Shared contracts**: Every type, interface, migration and API shape the change adds or changes, and the packages each part touches.
-      - **Test scenarios**: A table of `TC-...` ids with scenario, given, when and then. Every requirement in the spec deltas names one of these ids.
+      - **Test scenarios**: A table of `TC-...` ids with scenario, given, when, then, and the requirement name each row proves. Spec deltas cite requirement names, never `TC-...` ids: specs and design are both roots, so a delta cannot rely on a row that may not exist yet.
       - **Risks / Trade-offs**: Known limitations, things that could go wrong. Format: [Risk] → Mitigation
       - **Migration Plan**: Steps to deploy, rollback strategy (if applicable)
       - **Docs to update**: Every doc the change must update, at the paths the project uses. Derive the list from the project's own conventions; never assume a docs layout. Write `none` when no doc changes.
@@ -176,9 +176,9 @@ artifacts:
     description: Explicit work graph - nodes, edges, ownership, resources and gates
     template: tasks.md
     instruction: |
-      Create the change's work graph as tasks.md. A parser reads it, so the grammar is
-      strict: headings and metadata lines must match exactly. Do not add `## Wave`
-      sections or any other ordering layer.
+      Write the change's work graph as tasks.md. The schema README beside this file owns the
+      full grammar, states, batch math and the G/W code tables; this list is what to get
+      right while writing. Do not add `## Wave` sections or any other ordering layer.
 
       Before writing, check design.md for Open Questions. If any would change what
       gets built, resolve them with the user first.
@@ -186,56 +186,52 @@ artifacts:
       First line of the file, exact:
       `<!-- openspec-graph: 1 -->`
 
-      One node per heading: `### <id>. <title> — <agent>`. Node ids are continuous
-      from 1. The owner is the agent id that will execute the node.
+      One node per heading: `### <id>. <title> — <agent>`. Node ids are unique positive
+      integers; gaps are allowed, so inserting a node never renumbers the rest. The owner
+      is the agent id that will execute the node.
 
       Metadata lines follow the heading, before the first task, each exactly once:
-      - `Depends on: none` or `Depends on: 1, 2` - node ids only. Never a wave, a
-        group, a range or prose.
-      - `Owns: path, path` or `Owns: none` - every file the node writes. Two nodes
-        with overlapping paths (or the same Go package) never run together.
-      - `Resource: db:test, build` - optional non-file conflicts (database, port,
-        browser, build cache). Nodes sharing a tag never run together.
+      - `Depends on: none` or `Depends on: 1, 2` - node ids only. Never a wave, a group, a
+        range or prose.
+      - `Owns: path, path` or `Owns: none` - every file the node writes. Two nodes with
+        overlapping paths (or the same Go package) never run together.
+      - `Resource: db:test, build` - optional non-file conflicts (database, port, browser,
+        build cache). Nodes sharing a tag never run together.
       - `Gate: unit | review | qa | human | none` - default `unit`.
-      - `Evidence: .notes/<change>/<file>.md` - required for `review`, `qa` and
-        `human`.
+      - `Evidence: evidence/<file>.md` - required for `review`, `qa` and `human`. The path
+        is relative to the change and committed with it; never `.notes/`, which is ignored
+        and dangles after archive.
 
-      Tasks are `- [ ] <id>.<n> <text> Check: <command> Covers: <TC-...>`. The apply
-      phase parses the checkbox: `[x]` is done; every other marker is unfinished.
-      The id prefix must equal the node id: node 2 owns 2.1, 2.2, and so on. A task
-      whose prefix names another node is an error, and that prefix is the only
-      correlation between a graph node and its tasks.
-      - `Check:` states how to prove the task, with the command and its expected exit.
-      - `Covers:` names the `design.md` or main-spec TC ids; `all` is legal only on a review or QA
-        gate. Every TC in design.md must be covered by at least one node.
+      Tasks are `- [ ] <id>.<n> <text> Check: <command> Covers: <TC-...>`. The apply phase
+      parses the checkbox: `[x]` is done; every other marker is unfinished. The id prefix
+      must equal the node id: node 2 owns 2.1, 2.2.
+      - `Check:` states how to prove the task, with the command and the outcome that must
+        hold - an exit status, a count, an output.
+      - `Covers:` names ids from design.md's Test scenarios table or the main specs' scenarios; `all` is legal only on a
+        review or QA gate.
       - Keep node and task ids stable; other artifacts reference them.
 
       Rules:
       - One node per subagent invocation. Split a node when its tasks span unrelated
         check commands, more than one agent, or a shared file with a sibling.
       - Put shared contracts and hotspot files in the first nodes; put review and QA
-        gates last. Every node must be completable without another node's unmerged
-        work.
-      - Add a `Depends on:` edge only when the dependent cannot pass a `Check:`
-        without the dependency's output, and name that output in the task text - a
-        path, an interface or a TC. If you cannot name it, drop the edge. Independent
-        roots are the default; do not chain nodes to be safe.
+        gates last. Every node must be completable without another node's unmerged work.
+      - Add a `Depends on:` edge only when the dependent cannot pass a `Check:` without the
+        dependency's output, and name that output in the task text - a path, an interface
+        or a TC. If you cannot name it, drop the edge; independent roots are the default.
       - A change with four or more nodes must have at least one layer with two nodes.
-        A fully serial plan needs a reason; state it in the ticket or the design.
-      - Every node owns its own tests and fixtures and must pass its checks with only
-        its ancestors in the tree. Tests and docs for a node's behavior land in that
-        node, never in a final catch-all.
-      - If two nodes write the same file, merge them or extract the file into an
-        earlier contract node.
-      - Include a review gate (`code-reviewer`, `Covers: all`) and, when behavior
-        changes, a QA gate with its evidence path. Gates verify only; they do not fix.
-      - Every path listed under Docs to update in design.md must be owned by a node, and
-        the doc update lands in the node that changes the behavior it documents.
+        A fully serial plan needs a reason; state it in the design.
+      - Every node owns its own tests and fixtures and must pass its checks with only its
+        ancestors in the tree. Tests and docs for a node's behavior land in that node.
+      - If two nodes write the same file, merge them or extract the file into an earlier
+        contract node.
+      - Include a review gate (`code-reviewer`, `Covers: all`) and, when behavior changes,
+        a QA gate with its evidence path. Gates verify only; they do not fix.
+      - Every path listed under Docs to update in design.md is owned by a node, and the doc
+        update lands in the node that changes the behavior it documents.
 
-      Layers and run batches are computed, never written:
-      `layer(n) = 1 + max(layer(dep))`; a run batch is the ready set minus overlapping
-      `Owns:` and shared `Resource:`, capped by the runner. Do not serialize nodes by
-      hand when the graph already allows them to run together.
+      Layers and the ready set are computed from `Depends on:`, `Owns:` and `Resource:`;
+      never write them. The standard view is the `task-graph` skill's board.
 
       Example node:
       ```
@@ -252,45 +248,42 @@ artifacts:
 
   - id: graph
     generates: graph.md
-    description: Generated visual of the work graph - nodes, layers, batches, coverage
+    description: Plan snapshot of the work graph as a terminal-friendly ASCII layer board
     template: graph.md
     instruction: |
-      Render the task graph into graph.md after tasks.md exists.
+      Write the work graph into graph.md, once, immediately after tasks.md is written.
 
-      Run `openspec-graph render <change>` from the project root. The command parses
-      tasks.md and writes every section from it: node list and edges, computed layers,
-      the next runnable batch, conflicts, TC coverage and the critical path.
+      Draw it in the board format the schema README defines: a header with the source
+      hash, one plain-text line per node (layer, state, id, title, owner, tasks done/total,
+      dependencies and gate), a footer with the ready set, deferred and blocked nodes and
+      the critical path, then the TC coverage table. Plain text, so it reads in any
+      terminal; the `task-graph` skill draws the same board on demand.
 
-      If the renderer is not installed, fill the template from tasks.md by hand:
-      - compute the source hash with `sha256sum tasks.md` (first 12 characters) and put
-        it on the Source line;
-      - one Mermaid node per `###` heading, one edge per `Depends on:` id, hexagons for
-        review, qa and human gates;
-      - sort every table and edge list by node id, so a re-render produces an empty diff.
-
-      Never change the plan in graph.md. Edit tasks.md and re-render. A graph.md whose
-      source hash does not match tasks.md is error G016.
+      graph.md is a plan snapshot, not a live view. Do not redraw it when a task is ticked
+      during apply and do not edit it to change the plan: plan changes go in tasks.md. The
+      `Source:` hash is provenance and nothing compares it.
     requires:
       - tasks
 
 apply:
-  requires: [tasks, graph]
+  requires: [tasks]
   tracks: tasks.md
   instruction: |
     Execute tasks.md as a graph, not a list.
 
     1. Parse the nodes and their `Depends on:` edges. A node may start when every
        dependency is `done`.
-    2. Compute the ready set. Remove nodes whose `Owns:` overlap another ready node's
-       paths (or Go package) and nodes sharing a `Resource:` tag; cap the batch at the
-       runner's limit. `openspec-graph next` does this when installed.
+    2. The ready set is every node whose dependencies are done, in `(layer, id)` order,
+       capped at 4 and never two nodes sharing an `Owns:` path or a `Resource:` tag.
     3. Hand each node to the agent named in its heading. Never code inline.
-    4. A node is done only when every task's `Check:` passes and its gate evidence
-       exists. Never tick a box to unblock downstream work.
+    4. A node is done only when every task's `Check:` passes; gate evidence is committed
+       under `openspec/changes/<change>/evidence/`. Never tick a box to unblock downstream
+       work.
     5. On failure write `(failed: reason)` on the task and return it to the same owner.
        Review findings reopen the implementation node; QA reruns only failed scenarios.
-    6. Regenerate graph.md after each transition when the renderer is installed.
 
     Pause on blockers or material ambiguity. Do not invent a task to satisfy a
-    dependency, and do not start a blocked node because it looks independent.
+    dependency, and do not start a blocked node because it looks independent. Project
+    apply-time doctrine belongs in `operations.apply.guidance` in openspec/config.yaml,
+    not here.
 
