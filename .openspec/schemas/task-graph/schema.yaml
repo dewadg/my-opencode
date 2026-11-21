@@ -263,8 +263,31 @@ artifacts:
       - specs
       - design
 
+  - id: graph
+    generates: graph.md
+    description: Generated visual of the work graph - nodes, layers, batches, coverage
+    template: graph.md
+    instruction: |
+      Render the task graph into graph.md after tasks.md exists.
+
+      Run `openspec-graph render <change>` from the project root. The command parses
+      tasks.md and writes every section from it: node list and edges, computed layers,
+      the next runnable batch, conflicts, TC coverage and the critical path.
+
+      If the renderer is not installed, fill the template from tasks.md by hand:
+      - compute the source hash with `sha256sum tasks.md` (first 12 characters) and put
+        it on the Source line;
+      - one Mermaid node per `###` heading, one edge per `Depends on:` id, hexagons for
+        review, qa and human gates;
+      - sort every table and edge list by node id, so a re-render produces an empty diff.
+
+      Never change the plan in graph.md. Edit tasks.md and re-render. A graph.md whose
+      source hash does not match tasks.md is error G016.
+    requires:
+      - tasks
+
 apply:
-  requires: [tasks]
+  requires: [tasks, graph]
   tracks: tasks.md
   instruction: |
     Execute tasks.md as a graph, not a list.
