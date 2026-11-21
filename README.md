@@ -18,7 +18,8 @@ cp -R .opencode/skills/*   ~/.config/opencode/skills/
 `opencode.example.json` is a sample MCP config; merge its `mcp.servers` block into a project's
 `opencode.json` or the global `~/.config/opencode/opencode.json`, then export the env vars it
 references: `CONTEXT7_API_KEY`, `GITLAB_PAT`, `FIGMA_API_KEY`. Secrets are `{env:VAR}` references,
-never literals. The repo's own `opencode.json` contains only the schema so MCP servers stay opt-in.
+never literals. The repo ships no project `opencode.json`, so MCP servers stay opt-in: nothing is
+enabled unless the global config or a project adds `mcp.servers`.
 
 ## Agents
 
@@ -44,7 +45,8 @@ mode, permissions, optional model/color) plus a system prompt. The filename is t
 Claude Code's `tools:`, `skills:`, `mcpServers:`, and `model: sonnet|opus|haiku` fields have no V2
 equivalent. Tool access is expressed as `permissions` (for example, `code-diver` denies `edit`);
 models are inherited from the parent session unless you set `model: provider/model#variant` on an
-agent or override it in `opencode.json`; MCP servers are configured globally, not per agent.
+agent or override it in the global `~/.config/opencode/opencode.json`; MCP servers are configured
+globally, not per agent.
 
 Current model mapping — Flash only, effort as the dial:
 
@@ -53,7 +55,8 @@ Current model mapping — Flash only, effort as the dial:
 | Main / important | `deepseek/deepseek-flash#high` | `architect-reviewer`, `code-reviewer`, `compliance-auditor`, `db-admin`, `security-auditor` |
 | Common | `deepseek/deepseek-flash#low` | `api-documenter`, `code-diver`, `docker-eng`, `golang-eng`, `js-eng`, `qa-eng`, `react-eng`, `vue-eng` |
 
-The default primary model is `deepseek/deepseek-flash#high` in `opencode.json`.
+The default primary and the per-agent pins live in the global `~/.config/opencode/opencode.json`;
+the repo ships no project config.
 
 These agents are from [awesome-claude-code-subagents](https://github.com/VoltAgent/awesome-claude-code-subagents) and modified for my personal use.
 
