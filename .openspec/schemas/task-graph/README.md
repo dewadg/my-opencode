@@ -1,8 +1,8 @@
 # task-graph schema
 
 An OpenSpec workflow schema that replaces the flat task checklist with an explicit work graph.
-`specs` and `design` are unchanged from `spec-driven`; `proposal.md` is dropped; `tasks.md` is the
-graph and `graph.md` is its generated view.
+`specs` is unchanged from `spec-driven`; `design` carries the project's design rules;
+`proposal.md` is dropped; `tasks.md` is the graph and `graph.md` is its generated view.
 
 ## Install
 
@@ -28,6 +28,28 @@ schema: task-graph
 Artifacts: `specs` and `design` are roots; `tasks` requires both; `graph` requires `tasks`.
 `apply.requires` is `[tasks, graph]`, and `apply.tracks` stays `tasks.md`, so OpenSpec's checkbox
 progress and archive gate are unchanged.
+
+## Design artifact
+
+`design.md` carries the project's design rules, not just the upstream headings. Required sections:
+
+- Context, Goals / Non-Goals
+- Flow — mermaid when a flow, schema or state changes; IDE-safe types only (flowchart,
+  sequenceDiagram, stateDiagram-v2, erDiagram), quoted labels, no `;`/`#`, never `end` as an id
+- Decisions
+- Shared contracts — types, interfaces, migrations, API shapes, packages touched, and every new or
+  renamed foreign key / id-holding column or payload field under the project's naming rule
+- Test scenarios — `TC-…` table with scenario, given, when, then; the spec deltas reference these ids
+- Risks / Trade-offs, Migration Plan
+- Docs to update — `docs/database.md` on a migration; `docs/background-jobs.md` on `sync_jobs` kinds,
+  channel sync triggers, the linked channel rule or the activity feed; `docs/architecture.md` on a
+  new domain, cross-domain call, queue, task chain or term
+- Open Questions
+
+Rules: code flow is explained with the `call-graph` skill; scenarios come from the `test-scenario`
+skill; HTTP tests come from the `hurl-write` skill, with change-only checks in `test/hurl/scratch/`
+and lasting asserts in the matching regression file; tests run locally only (`dev` in
+`variables.yaml`), never staging or production.
 
 ## `tasks.md` grammar
 
