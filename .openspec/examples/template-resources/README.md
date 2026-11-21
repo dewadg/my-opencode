@@ -1,4 +1,4 @@
-# Example — glab50-template-resources
+# Example — template-resources
 
 A rewrite of the archived change at
 `artifact/openspec/changes/archive/2026-11-21-glab50-template-resources/tasks.md` in the

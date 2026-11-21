@@ -1,4 +1,4 @@
-# Review — glab50-template-resources (round 1)
+# Review — template-resources (round 1)
 
 Status: pass.
 

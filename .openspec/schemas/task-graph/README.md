@@ -246,7 +246,7 @@ Board grammar:
 - Footer: `next: … · deferred: … · blocked: … · critical path 1→2→3`, `none` where empty.
 
 ```text
-glab50-template-resources · 5 nodes · 4 layers
+template-resources · 5 nodes · 4 layers
 L1  ✓ 1  Template content                js-eng          6/6  ←None
 L2  ✓ 2  Registry, resources and tests   golang-eng      4/4  ←1
 L3  ✓ 3  Guide list and docs             api-documenter  2/2  ←2

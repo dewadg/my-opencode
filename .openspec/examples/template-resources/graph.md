@@ -1,10 +1,10 @@
 <!-- plan snapshot; do not edit -->
-# Graph — glab50-template-resources
+# Graph — template-resources
 
 Source: tasks.md@438245ee1adf · 5 nodes · 4 layers · 8 edges
 
 ```
-glab50-template-resources · 5 nodes · 4 layers
+template-resources · 5 nodes · 4 layers
 L1  ✓ 1  Template content                js-eng          6/6  ←None
 L2  ✓ 2  Registry, resources and tests   golang-eng      4/4  ←1
 L3  ✓ 3  Guide list and docs             api-documenter  2/2  ←2

@@ -1,4 +1,4 @@
-# QA — glab50-template-resources
+# QA — template-resources
 
 Status: pass.
 

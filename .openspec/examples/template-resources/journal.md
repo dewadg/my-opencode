@@ -1,5 +1,5 @@
 <!-- openspec-journal: 1 -->
-# Journal — glab50-template-resources
+# Journal — template-resources
 
 ## D1 · node 1 · One inline SVG sprite instead of per-icon files
 Date: 2026-11-21 · Owner: js-eng
