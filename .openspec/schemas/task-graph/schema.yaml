@@ -204,12 +204,22 @@ artifacts:
       - Put shared contracts and hotspot files in the first nodes; put review and QA
         gates last. Every node must be completable without another node's unmerged
         work.
+      - Add a `Depends on:` edge only when the dependent cannot pass a `Check:`
+        without the dependency's output, and name that output in the task text - a
+        path, an interface or a TC. If you cannot name it, drop the edge. Independent
+        roots are the default; do not chain nodes to be safe.
+      - A change with four or more nodes must have at least one layer with two nodes.
+        A fully serial plan needs a reason; state it in the ticket or the design.
+      - Every node owns its own tests and fixtures and must pass its checks with only
+        its ancestors in the tree. Tests and docs for a node's behavior land in that
+        node, never in a final catch-all.
+      - If two nodes write the same file, merge them or extract the file into an
+        earlier contract node.
       - Include a review gate (`code-reviewer`, `Covers: all`) and, when behavior
-        changes, a QA gate with its evidence path.
+        changes, a QA gate with its evidence path. Gates verify only; they do not fix.
       - A migration requires a node owning `docs/database.md`; a `sync_jobs` change
         requires `docs/background-jobs.md`; a new domain requires
         `docs/architecture.md` and its `doc.go`.
-      - A task's tests and docs belong to that task's node, not to a final catch-all.
 
       Layers and run batches are computed, never written:
       `layer(n) = 1 + max(layer(dep))`; a run batch is the ready set minus overlapping

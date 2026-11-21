@@ -18,4 +18,6 @@ A rewrite of the archived change at
   empty next batch.
 
 `graph.md` is hand-rendered from `tasks.md` because `openspec-graph render` is not implemented yet.
-Its `Source:` hash matches the file above.
+Its `Source:` hash matches the file above. Gate `Evidence:` paths point into the original repo's
+`.notes/`; this example does not carry the review and QA reports, so a real checker run would need
+them before treating those gates as satisfied.
