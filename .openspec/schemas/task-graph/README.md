@@ -180,8 +180,8 @@ Gate evidence is scratch. The gate's agent writes it at
 it during apply, and it exists nowhere else: never committed, never archived. The path must be
 exactly `evidence/<name>.md`: no `..`, no leading `/`, no other directory.
 
-- The project's `.gitignore` carries `openspec/changes/**/evidence/`, and the applying orchestrator
-  deletes `evidence/` before archiving the change, so the repository never carries it.
+- The project's `.gitignore` carries `openspec/changes/**/evidence/`, and the archive step empties
+  it before the change is archived ([Archive](#archive)), so the repository never carries it.
 - A report is prose the planner reads, not a machine artifact. The `evidence/` directory may hold
   screenshots, HTML dumps and other binaries, which is exactly why it is not persisted; the named
   `evidence/<file>.md` is the prose index the planner reads.
@@ -284,6 +284,29 @@ No ANSI colour, and the same `tasks.md` draws the same board. `## Coverage` maps
 nodes that name it under `Covers:`; table cells keep `\|` escaping, while the board only collapses
 line breaks in a title.
 
+## Archive
+
+Evidence does not outlive the change, so emptying it is an archive step, not a cleanup left to
+habit.
+
+- Before `openspec archive`, empty the change's evidence directory: `rm -rf <change-dir>/evidence`.
+  Delete rather than move — nothing reads it afterwards, and the durable record is `tasks.md`.
+- The rule ships as project `operations.archive.guidance`, because `schema.yaml` has no archive
+  hook: its loader accepts `name`, `version`, `description`, `artifacts[]` and `apply` only. The
+  `openspec instructions archive` workflow injects that guidance.
+
+```yaml
+operations:
+  archive:
+    guidance:
+      - Empty the change's evidence directory before archiving: rm -rf <change-dir>/evidence.
+      - Delete evidence rather than moving it; nothing reads it after archive.
+```
+
+- A change archived with its evidence left behind is un-purged, not corrupt: the directory is
+  gitignored, so it is untracked junk on disk. Delete it then; the `Evidence:` lines stay as
+  historical pointers ([Evidence](#evidence)).
+
 ## Integration
 
 - `tasks.md` stays at `openspec/changes/<change>/tasks.md`; `apply.tracks` and checkbox progress are
@@ -296,9 +319,12 @@ line breaks in a title.
 - `openspec/config.yaml` `rules.tasks` describes the grammar; apply-time doctrine goes in
   `operations.apply.guidance`, because `rules` is injected only into `instructions <artifact>`. The
   schema's own `apply.instruction` stays short and points there.
+- Archive doctrine goes in `operations.archive.guidance`, the sibling of
+  `operations.apply.guidance`: `openspec instructions archive` injects it, and neither lives in
+  `schema.yaml`.
 - `graph.md` is committed and travels with the change when archived; it is never regenerated.
-- `evidence/` never travels with the change: it is gitignored, and deleted before archive, so
-  `Evidence:` lines in an archived change point at files that are gone.
+- `evidence/` never travels with the change: it is gitignored and emptied by the archive step
+  ([Archive](#archive)), so `Evidence:` lines in an archived change point at files that are gone.
 - Only the loader keys OpenSpec 1.16 accepts are used in `schema.yaml`: `name`, `version`,
   `description`, `artifacts[]` (`id`, `generates`, `description`, `template`, `instruction`,
   `requires`) and `apply` (`requires`, `tracks`, `instruction`). Unknown keys are silently stripped,
