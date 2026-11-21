@@ -14,8 +14,6 @@ A rewrite of the archived change at
   depends on 1.
 - Review and QA are `Gate` nodes with scratch `Evidence:` files under `evidence/`, not prose-only
   last-wave groups and not `.notes/`.
-- `journal.md` is the apply-time decision log: entries are numbered `D1`, `D2`, ... and each names
-  the node that made the decision.
 - The original `TC-830` reference is kept. It is not in this change's `design.md`; it resolves from
   `openspec/specs/authoring-guide/spec.md`, so a plan may cite a TC that lives in a main spec rather
   than in the change design.
