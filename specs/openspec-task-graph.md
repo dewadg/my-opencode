@@ -13,8 +13,8 @@ description: Task-graph schema for OpenSpec changes — group nodes, Depends on 
 
 # OpenSpec task graph — tasks.md schema v1
 
-> The canonical definition of the `tasks` artifact for graph-driven OpenSpec changes. Proposal,
-> design and spec artifacts are unchanged.
+> The canonical definition of the `tasks` artifact for graph-driven OpenSpec changes. Design and spec
+> artifacts are unchanged; `proposal.md` is dropped.
 
 ## Context
 
@@ -33,8 +33,8 @@ compute layers, pack run batches and render a view.
 - A validator with stable error codes, a `next` command that returns the runnable batch, and a
   generated visual.
 - Forward-only adoption: marked files are enforced; legacy and archived files are untouched.
-- A project-local OpenSpec schema package that carries the format: the `spec-driven` artifacts plus a
-  generated graph view.
+- A project-local OpenSpec schema package that carries the format: the `spec-driven` spec and design
+  artifacts, plus `tasks` and the generated graph view.
 
 ## Non-goals
 
@@ -43,7 +43,7 @@ compute layers, pack run batches and render a view.
 - A GUI, daemon or database; commands are read-only except `render`.
 - Rewriting archived changes.
 - Replacing OpenSpec's checkbox progress or archive gate.
-- New artifact types; `proposal.md`, `design.md` and `specs/**` keep their `spec-driven` content.
+- New artifact types beyond `graph`; `design.md` and `specs/**` keep their `spec-driven` content.
 
 ## Flow
 
@@ -110,9 +110,9 @@ flowchart LR
 ### D6: A project-local schema package with the `spec-driven` artifacts plus `graph`
 - **Choice**: ship `task-graph` as a project-local schema. It lives in
   `.openspec/schemas/task-graph/` in the config repo and is copied to
-  `openspec/schemas/task-graph/` when a project adopts it. It declares `proposal`, `specs`, `design`
-  and `tasks` with the same `requires` edges as `spec-driven`, plus a `graph` artifact that requires
-  `tasks`. Only the `tasks`, `graph` and `apply` instructions change.
+  `openspec/schemas/task-graph/` when a project adopts it. It declares `specs`, `design`, `tasks` and
+  `graph`: `specs` and `design` are roots, `tasks` requires both, `graph` requires `tasks`. Only the
+  `tasks`, `graph` and `apply` instructions change.
 - **Why**: the format needs a home OpenSpec can resolve, and a fork with identical artifacts keeps
   the document DAG unchanged. Names, templates and instructions travel with the schema instead of
   being copied into every project's config.
@@ -307,15 +307,14 @@ Canonical parsed model (shared by all commands):
 - `openspec/config.yaml` `rules.tasks` describes the grammar; apply-time doctrine goes in
   `operations.apply.guidance`, since `rules` is injected only into `instructions <artifact>`.
 - `graph.md` is committed and travels with the change when archived.
-- No change to `proposal.md`, `design.md` or `specs/**`.
+- No change to `design.md` or `specs/**`.
 
 ### 9. Schema package
 
 ```
 .openspec/schemas/task-graph/
-  schema.yaml                 # proposal, specs, design, tasks + graph; apply requires [tasks, graph]
+  schema.yaml                 # specs, design, tasks + graph; apply requires [tasks, graph]
   templates/
-    proposal.md               # unchanged
     spec.md                   # unchanged
     design.md                 # unchanged
     tasks.md                  # graph skeleton with the marker
@@ -333,7 +332,7 @@ Canonical parsed model (shared by all commands):
   `apply` (`requires`, `tracks`, `instruction`). Unknown keys are silently stripped, so no gate or
   validator fields may be added there.
 - The package was validated with `openspec schema validate task-graph` against a scratch project:
-  exit 0, `openspec status` lists the four artifacts, `applyRequires: [tasks]`, and the tasks
+  exit 0, `openspec status` lists the four artifacts, `applyRequires: [tasks, graph]`, and the tasks
   instruction resolves to the graph grammar.
 
 ## Testing
@@ -359,7 +358,7 @@ Canonical parsed model (shared by all commands):
 | `graph.md` older than `tasks.md` | `render --check` | exit 1, hash mismatch |
 | file without the marker | `check` | skipped, not an error |
 | unmarked legacy `tasks.md` | `baseline` | counted, never fails |
-| schema package copied into `openspec/schemas/` | `openspec schema validate task-graph` | exit 0; five artifacts; `applyRequires: [tasks, graph]`; tasks instruction carries the grammar |
+| schema package copied into `openspec/schemas/` | `openspec schema validate task-graph` | exit 0; four artifacts; `applyRequires: [tasks, graph]`; tasks instruction carries the grammar |
 
 ## Open Questions
 
