@@ -1,6 +1,6 @@
 # task-graph — grammar, invariants and the board format live in README.md beside this file.
 name: task-graph
-version: 1
+version: 2
 description: Spec-driven specs and design with an explicit, validated task graph
 artifacts:
   - id: specs
@@ -145,7 +145,9 @@ artifacts:
       - **Flow**: A mermaid diagram when a flow, schema or state changes. Keep it IDE-safe: only flowchart, sequenceDiagram, stateDiagram-v2 or erDiagram; quote labels with punctuation; no `;`, `#` or `<...>` in sequence messages; never `end` as an id. Validate with `mmdc` when installed.
       - **Decisions**: Key technical choices with rationale (why X over Y?). Include alternatives considered for each decision.
       - **Shared contracts**: Every type, interface, migration and API shape the change adds or changes, and the packages each part touches.
-      - **Test scenarios**: A table of `TC-...` ids with scenario, given, when, then, and the requirement name each row proves. Spec deltas cite requirement names, never `TC-...` ids: specs and design are both roots, so a delta cannot rely on a row that may not exist yet.
+      - **Test scenarios**: A table of `TC-...` ids with scenario, given, when, then, the `Requirement` name each row proves, and `Proof` - one of `unit | integration | api | ui | device | manual`. `unit` and `integration` route to the verify node; `api`, `ui`, `device` and `manual` route to QA (`ui` is web, `device` is mobile), so the column decides which gate proves each scenario. Spec deltas cite requirement names, never `TC-...` ids: specs and design are both roots, so a delta cannot rely on a row that may not exist yet.
+      - **Verification**: A table of the commands the verify stage runs, per project: the migrate, build, typecheck, lint and suite commands the project already defines. Example rows: a Go API with `make migrate` (or the project's migration validation), `go build`, `go vet`, `golangci-lint` and `go test`; a web client with no migration, `tsc --noEmit`, eslint, vitest or jest, and the build; a mobile client with no migration, `flutter analyze` or `dart analyze`, test, and the build. Write `none` where a stack has no command. State which behavior is proven by the suite and which only by QA, so a scenario is not left to both or to neither; the verify node runs these commands and never invents its own.
+      - **Observability**: The log events, their levels and fields, the trace spans, the metric names and labels, and what must never be logged. Review checks this section against the code; `none` is a legal answer but needs the reason.
       - **Risks / Trade-offs**: Known limitations, things that could go wrong. Format: [Risk] → Mitigation
       - **Migration Plan**: Steps to deploy, rollback strategy (if applicable)
       - **Docs to update**: Every doc the change must update, at the paths the project uses. Derive the list from the project's own conventions; never assume a docs layout. Write `none` when no doc changes.
@@ -177,14 +179,15 @@ artifacts:
     template: tasks.md
     instruction: |
       Write the change's work graph as tasks.md. The schema README beside this file owns the
-      full grammar, states, batch math and the G/W code tables; this list is what to get
-      right while writing. Do not add `## Wave` sections or any other ordering layer.
+      full grammar, states and the ready-set rules; this list is what to get right while writing. Do not add `## Wave` sections or any other ordering layer.
 
       Before writing, check design.md for Open Questions. If any would change what
       gets built, resolve them with the user first.
 
       First line of the file, exact:
-      `<!-- openspec-graph: 1 -->`
+      `<!-- openspec-graph: 2 -->`
+
+      A file marked `: 1` is v1 and read-only: never migrate or rewrite it.
 
       One node per heading: `### <id>. <title> — <agent>`. Node ids are unique positive
       integers; gaps are allowed, so inserting a node never renumbers the rest. The owner
@@ -195,56 +198,104 @@ artifacts:
         range or prose.
       - `Owns: path, path` or `Owns: none` - every file the node writes. Two nodes with
         overlapping paths (or the same Go package) never run together.
-      - `Resource: db:test, build` - optional non-file conflicts (database, port, browser,
-        build cache). Nodes sharing a tag never run together.
-      - `Gate: unit | review | qa | human | none` - default `unit`.
-      - `Evidence: evidence/<file>.md` - required for `review`, `qa` and `human`. The path is
-        relative to the change, and the file is scratch: written while the gate verifies, read by
-        the planner, never committed and never archived. It is exactly `evidence/<name>.md` - no
-        `..`, no leading `/`, no other directory - and `.gitignore` carries
-        `openspec/changes/**/evidence/`.
+      - `Resource: db:test, build` - optional non-file conflicts. The fullstack ones are
+        `db:test`, `port:<n>`, `emulator`, `metro` and `build` (generated clients, lockfiles).
+        Tag only what the node actually holds; nodes sharing a tag never run together.
+      - `Gate: build | verify | qa | review | human | none` - default `build`. `unit` is
+        v1-only and reads as `build`.
+      - `Evidence: evidence/<file>.md` - required for `verify`, `qa`, `review` and `human`. The
+        path is relative to the change, and the file is scratch: written while the gate
+        verifies, read by the planner, never committed and never archived. It is exactly
+        `evidence/<name>.md` - no `..`, no leading `/`, no other directory - and `.gitignore`
+        carries `openspec/changes/**/evidence/`.
+
+      Gates and stages:
+      - `build` (stage 1): the project's builder writes the planned code and its tests and fixtures,
+        then compiles, parses or runs the narrowest structural check on the files it touched - a
+        validator, or a `grep` for required content where there is no compiler - test files
+        included, never a behavior test. Nothing else - no lint, no full typecheck, no suite, no
+        server, no browser. `none` also sits in stage 1 and checks nothing: a spike or a manual step
+        only.
+      - `verify` (stage 2): the project's build owner, resumed, runs every command in design's
+        Verification table once for the project, reports each exit code, and fixes mechanical
+        failures inline. It owns no files and writes only inside the build nodes' paths it
+        depends on.
+      - `qa` (stage 2): the behavioral QA agent drives the behavioral scenarios
+        (`Proof: api | ui | device | manual`) on the running app and never fixes. `qa` and `review` both
+        depend only on `verify` and run concurrently.
+      - `review` (stage 3): the static review agent reads the diff. `human` (stage 3) is a user
+        decision.
+
+      Stage order: build nodes first; then one verify node per project, after that project's
+      builds; then review and QA. Every plan has a review gate, and any behavior change gets a
+      QA gate. Fast path: one project and at most three nodes may put `Gate: verify` on a builder
+      node instead of adding a verify node; review stays separate. A fused node keeps its own
+      `Owns:` list and writes only those files - the `Owns: none` gate rule does not apply to it.
+      Any code change reopens every gate downstream of it.
 
       Tasks are `- [ ] <id>.<n> <text> Check: <command> Covers: <TC-...>`. The apply phase
       parses the checkbox: `[x]` is done; every other marker is unfinished. The id prefix
       must equal the node id: node 2 owns 2.1, 2.2.
       - `Check:` states how to prove the task, with the command and the outcome that must
-        hold - an exit status, a count, an output. For a `review` or `qa` gate, `Check:` names
-        the result shape the summary must carry, e.g. findings by file and severity or scenario
-        pass/fail, so the durable record is self-contained.
-      - `Covers:` names ids from design.md's Test scenarios table or the main specs' scenarios; `all` is legal only on a
-        review or QA gate.
+        hold. Per gate: build = the project's compile, parse or narrowest structural check of the
+        touched files - a validator, or a `grep` for required content where there is no compiler -
+        test files included, exits 0, never a behavior test; verify = every command in design's
+        Verification table, each exit code reported; qa = the scenario pass/fail shape; review =
+        findings by file and severity, and no project command run.
+      - `Covers:` names ids from design.md's Test scenarios table or the main specs' scenarios.
+        A build node names the TCs it implements; `all` is legal on verify, qa and review.
       - Keep node and task ids stable; other artifacts reference them.
 
       Rules:
       - One node per subagent invocation. Split a node when its tasks span unrelated
         check commands, more than one agent, or a shared file with a sibling.
-      - Put shared contracts and hotspot files in the first nodes; put review and QA
-        gates last. Every node must be completable without another node's unmerged work.
-      - Add a `Depends on:` edge only when the dependent cannot pass a `Check:` without the
-        dependency's output, and name that output in the task text - a path, an interface
-        or a TC. If you cannot name it, drop the edge; independent roots are the default.
-      - A change with four or more nodes must have at least one layer with two nodes.
-        A fully serial plan needs a reason; state it in the design.
-      - Every node owns its own tests and fixtures and must pass its checks with only its
-        ancestors in the tree. Tests and docs for a node's behavior land in that node.
+      - Put shared contracts and hotspot files in the first nodes; put verify, review and QA
+        gates after the builds they prove. Every node must be completable without another
+        node's unmerged work.
+      - Width is the default: every node that can start without another's output shares that
+        layer. Extract a shared contract into an early node instead of serializing its consumers.
+        Add a `Depends on:` edge only when the dependent needs a named output - a path, an
+        interface or a TC - and name it in the task text. A serial edge must name its output; a
+        fully serial plan needs a reason per edge.
+      - Tag `Resource:` only for a genuinely shared resource - generated output, lockfile, DB,
+        port. Over-tagging serializes the plan.
+      - Two `build` nodes in one project may run together when their `Owns:` paths are disjoint and
+        they share no `Resource:` tag. From verify onward, one node per project at a time. `qa` is
+        per project, so it runs concurrently across projects; a flow spanning projects gets its own
+        node depending on both projects' verify nodes.
+      - A fullstack plan starts with one API/schema contract node. Backend, web and mobile depend on
+        that contract, not on the backend implementation, so their builds run in parallel; review is
+        one node over the combined diff, reading the contract seam first.
+      - A node writes and compiles the tests for its behavior; the verify node runs them.
+        A node must pass its checks with only its ancestors in the tree.
       - If two nodes write the same file, merge them or extract the file into an earlier
         contract node.
-      - Include a review gate (`code-reviewer`, `Covers: all`) and, when behavior changes,
-        a QA gate with its evidence path. Gates verify only; they do not fix.
+      - Include a review gate (`Covers: all`) and, when behavior changes, a QA gate with its
+        evidence path. Review and QA report only; they do not fix.
+      - Each build node is resumed at most once, to fix all findings its gates batch into one
+        message; surviving findings go to the user.
       - Every path listed under Docs to update in design.md is owned by a node, and the doc
         update lands in the node that changes the behavior it documents.
 
       Layers and the ready set are computed from `Depends on:`, `Owns:` and `Resource:`;
       never write them. The standard view is the `task-graph` skill's board.
 
-      Example node:
+      Example nodes:
       ```
       ### 2. Export endpoint — golang-eng
       Depends on: 1
       Owns: internal/exports/service.go, internal/exports/service_test.go
-      Gate: unit
+      Gate: build
 
-      - [ ] 2.1 Stream a CSV for a date range; Check: `go test -race ./internal/exports/...` exits 0. Covers: TC-102, TC-103
+      - [ ] 2.1 Stream a CSV for a date range; Check: `go build ./internal/exports/` and `go test -run '^$' ./internal/exports/...` exit 0, so the package and its tests compile. Covers: TC-102, TC-103
+
+      ### 3. Verify — golang-eng
+      Depends on: 1, 2
+      Owns: none
+      Gate: verify
+      Evidence: evidence/verify-go.md
+
+      - [ ] 3.1 Run every command in design's Verification table. Check: each exit code reported. Covers: all
       ```
     requires:
       - specs
@@ -258,9 +309,12 @@ artifacts:
       Write the work graph into graph.md, once, immediately after tasks.md is written.
 
       Draw it in the board format the schema README defines: a header with the source
-      hash, one plain-text line per node (layer, state, id, title, owner, tasks done/total,
-      dependencies and gate), a footer with the ready set, deferred and blocked nodes and
-      the critical path, then the TC coverage table. Plain text, so it reads in any
+      hash, the node and layer counts and the stage counts (`b` build · `v` verify · `r`
+      review, zero stages omitted, `qa` counted in verify and `human` in review), one
+      plain-text line per node (layer, state, id, title, owner, tasks done/total,
+      dependencies and gate tag), a footer with the ready set (first 4 ids, then `+<n>`),
+      conflict-deferred and blocked nodes and the critical path, then the TC coverage table.
+      Gate tags are `{verify}`, `{qa}`, `{review}` and `{human}`; a `build` node carries none. Plain text, so it reads in any
       terminal; the `task-graph` skill draws the same board on demand.
 
       graph.md is a plan snapshot, not a live view. Do not redraw it when a task is ticked
@@ -275,21 +329,32 @@ apply:
   instruction: |
     Execute tasks.md as a graph, not a list.
 
-    1. Parse the nodes and their `Depends on:` edges. A node may start when every
-       dependency is `done`.
-    2. The ready set is every node whose dependencies are done, in `(layer, id)` order,
-       capped at 4 and never two nodes sharing an `Owns:` path or a `Resource:` tag.
-    3. Hand each node to the agent named in its heading. Never code inline.
-    4. A node is done only when every task's `Check:` passes. A gate reports a summary, not a
-       path, and the orchestrator writes that summary on the task line. Gate evidence is written
-       under `openspec/changes/<change>/evidence/` while the gate verifies and is never committed.
-       Never tick a box to unblock downstream work.
-    5. On failure write `(failed: reason)` on the task and return it to the same owner.
-       Review findings reopen the implementation node; QA reruns only failed scenarios.
-    6. A gate's report is written into `evidence/` while the gate runs; the durable record is
-       the summary on the task line, never a path to the report. A failing gate marks
-       `(failed: ...)` in `tasks.md`, because the report is deleted and only that marker
-       survives.
+    1. Ready = every node whose dependencies are `done` or `skipped`, in `(layer, id)` order.
+       Select by conflict only: skip a node sharing an `Owns:` path or a `Resource:` tag with one
+       already selected. There is no batch-size cap. Two `build` nodes in one project may run
+       together when their paths are disjoint and they share no `Resource:` tag; from verify
+       onward, one node per project at a time. Hand each node to the agent named in its heading;
+       never code inline.
+    2. Build: write the code and its tests; compile, parse or run the narrowest structural check
+       on the files it touched (a validator, or a content grep where there is no compiler), test
+       files included, never a behavior test. Nothing else - no lint, no full typecheck, no suite,
+       no server, no browser.
+    3. Verify: run design's Verification commands once for the project and fix mechanical
+       failures inline, in the same session. QA nodes then drive the behavioral test scenarios
+       on the running app and never fix.
+    4. Review: static read only - `git diff --stat`, then `git diff`. Never run a project
+       command; a claim that needs execution is a `🧪 verify` finding routed to that project's
+       builder in the batched fix round, or run by the caller when no round opens.
+    5. Collect: hold every gate report until the gates of that layer finish, then dispatch each
+       project's findings to that project's builder once, verbatim, with the fix round stated.
+       One wake-up per project, not one per gate.
+    6. One fix round: the builder fixes, runs the scoped verify and reports. Then re-review only
+       the fix diff, and re-run QA only the failed scenario ids. Findings surviving this round go
+       to the user.
+    7. A node is done only when every `Check:` passes. Never tick a box to unblock downstream
+       work; a failure writes `(failed: reason)`. A gate's durable record is the summary on the
+       task line, never a path to its evidence.
+    8. Invalidation: a changed file reopens every gate node downstream of it.
 
     Pause on blockers or material ambiguity. Do not invent a task to satisfy a
     dependency, and do not start a blocked node because it looks independent. Project

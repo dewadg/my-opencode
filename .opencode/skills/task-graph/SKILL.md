@@ -2,7 +2,7 @@
 name: task-graph
 description: >
   Draw an OpenSpec `task-graph` plan as the one standard ASCII layer board: layers, node state,
-  owner, task progress, dependencies, gates, the next batch and the critical path. Use when the
+  owner, task progress, dependencies, gates, the ready set and the critical path. Use when the
   user says "show the task graph", "plan board", "where is this change in its plan", "what can run
   next", or "visualise the plan". Reads `tasks.md` and nothing else. Not for code call paths (use
   `call-graph`), not for searching notes (use `note-search`), and not for writing or editing the
@@ -22,8 +22,8 @@ Resolve the change:
 
 - A change was named: use it.
 - No name: find `openspec/changes/*/tasks.md` (or `.openspec/changes/*/`) carrying the
-  `<!-- openspec-graph: 1 -->` marker. If several have unfinished tasks, or none does, ask once
-  which change the user means.
+  `<!-- openspec-graph: 1 -->` or `<!-- openspec-graph: 2 -->` marker. If several have unfinished
+  tasks, or none does, ask once which change the user means.
 
 Then read `tasks.md` in full. Never infer a node, an edge, an owner or a TC that the file does not
 contain.
@@ -34,12 +34,23 @@ Fields come straight from the file:
 
 | Field | Source |
 |---|---|
-| layer | `1 + max(layer of each `Depends on:` id)`; roots are layer 1 |
+| layer | `1 + max(layer of each Depends on: id)`; roots are layer 1 |
 | state | see the table below |
 | owner | the agent after the em dash in the `###` heading |
 | progress | `[x]` tasks / total tasks under that node |
 | deps | its `Depends on:` ids, `None` for roots |
-| gate | `Gate:` when it is `review`, `qa` or `human` |
+| gate | `Gate:` when it is `verify`, `qa`, `review` or `human`; a build carries no tag |
+| stage | derived from the gate, below |
+
+Stage comes from `Gate:`: `build`, `none` and a v1 `unit` are build; `verify` and `qa` are verify;
+`review` and `human` are review. An absent `Gate:` is build. The marker version changes nothing
+else: a v1 file renders with `unit` as build and is never rewritten.
+
+| `Gate:` | Stage |
+|---|---|
+| absent, `build`, `none`, `unit` (v1) | build |
+| `verify`, `qa` | verify |
+| `review`, `human` | review |
 
 | State | Condition |
 |---|---|
@@ -48,7 +59,7 @@ Fields come straight from the file:
 | `failed` | a task carries `(failed: …)` |
 | `skipped` | the heading carries `(skipped: …)` |
 | `blocked` | a `Depends on:` node is not `done` (a `skipped` dependency counts as satisfied) |
-| `ready` | no `[x]`, every dependency `done`, no `(failed: …)` |
+| `ready` | no `[x]`, every dependency `done` or `skipped`, no `(failed: …)` |
 
 Glyphs: `▪` ready, `▸` running, `✓` done, `⊘` blocked, `✕` failed, `—` skipped.
 
@@ -57,23 +68,25 @@ Glyphs: `▪` ready, `▸` running, `✓` done, `⊘` blocked, `✕` failed, `�
 One fenced block, no prose around it:
 
 ```text
-<change> · <N> nodes · <L> layers · <R> ready · <U> running · <B> blocked
+<change> · <N> nodes · <L> layers · <b> build · <v> verify · <r> review
 L1  ▪ 1  <title>                          <owner>  <done>/<total>  ←None
-L2  ⊘ 2  <title>                          <owner>  0/1  ←1   {review}
-    ▪ 3  <title>                          <owner>  0/2  ←1,2
+L2  ⊘ 2  <title>                          <owner>  0/1  ←1   {verify}
+L3  ▪ 3  <title>                          <owner>  0/2  ←2   {review}
 next: <ids or none> · deferred: <ids or none> · blocked: <ids or none> · critical path 1→2→3
 ```
 
-- Header: omit state counts that are zero; always print nodes and layers.
+- Header: stage counts are nodes per stage, with `qa` counted in verify and `human` in review. Omit
+  a stage count that is zero; always print nodes and layers.
 - One line per node, sorted by `(layer, id)`. `L<n>` in the 4-column left field, printed only on the
   first row of its layer and blank on continuation rows.
 - Columns: state glyph, id, title, owner, tasks done/total, `←` dependencies, `{gate}` only for
-  `review`, `qa` and `human`.
+  `verify`, `qa`, `review` and `human`; a build node carries no tag.
 - Titles truncate to 36 characters with `…`; pad the owner column to the longest owner; keep every
   row within 80 columns, dropping the gate tag before the dependencies.
-- Footer: `next` is the ready set in `(layer, id)` order, capped at 4 and skipping a node that shares
-  an `Owns:` path or a `Resource:` tag with one already listed — say which nodes the cap or a clash
-  deferred. `blocked` lists nodes whose dependencies are unfinished. `critical path` is the longest
+- Footer: `next` is the ready set in `(layer, id)` order, conflict-only — skip a node that shares an
+  `Owns:` path or a `Resource:` tag with one already selected. Print the first 4 ids and append
+  `+<n>` for the rest; `deferred` names conflict-deferred nodes only, never a size cap. `blocked`
+  lists nodes whose dependencies are unfinished. `critical path` is the longest
   dependency chain, drawn as `1→2→3→4`.
 - No colour, no box drawing, no Mermaid. The board has to survive `cat`, a narrow terminal and a
   copy-paste into a ticket.

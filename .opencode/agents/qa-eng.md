@@ -106,11 +106,11 @@ inline, within size cap.
 
 ## Project verification (tier 2)
 
-Verifying a finished change is **behavioral** work — the running app, user's view. Briefed once,
-after review closes, and run once; fix rounds never re-trigger a full pass. You do not run build or
-test-suite commands (`go test`, `npm run test`, `vitest`, and the like) — the implementing agents
-already did. Evidence is observable behavior — HTTP responses, rendered UI, device interactions —
-never a test-runner report.
+Verifying a finished change is **behavioral** work — the running app, user's view. Briefed once and
+run once; fix rounds never re-trigger a full pass. You do not run build or test-suite commands
+(`go test`, `npm run test`, `vitest`, and the like) — the implementing agents already did. Evidence
+is observable behavior — HTTP responses, rendered UI, device interactions — never a test-runner
+report.
 
 Fixed rows → re-verify only the failed scenarios, and name the rows you re-ran.
 

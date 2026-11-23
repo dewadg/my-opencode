@@ -40,7 +40,11 @@ Break coding instruction into tasks, orchestrate specialized subagents. Output: 
    More than two tasks: the primary records the plan and each brief cites its section anchor; that
    record is the plan — no separate plan file. Two tasks or fewer: an in-chat checklist is enough.
 
-   Decide changes before writing code, record as tasks in dependency order (shared contracts before consumers; backend before frontend calling it). Every behavioral change gets a test task alongside when the project supports one.
+   Decide changes before writing code, record as tasks: the shared contract first — API schema,
+   shared types, migration, payload shapes — then backend, web and mobile build in parallel against
+   it. A client depends on the contract, never on the backend implementation; a real runtime
+   dependency (the client calls a live endpoint) belongs in verification, not in the build graph.
+   Every behavioral change gets a test task alongside when the project supports one.
 
 4. **Delegate, then verify and review once for the whole change**
 
@@ -55,52 +59,60 @@ Break coding instruction into tasks, orchestrate specialized subagents. Output: 
       tool — `sed`/`awk` only for a uniform multi-file rewrite, never a Python script or `python3`
       heredoc patching files.
 
-   b. **Concurrency.** One subagent per project per task — two agents in the same project collide on
-      the test database, dev-server port, build output, lockfile, or migration state. Parallel is
-      for independent projects and for read-only work (any number of explorers). Serialize anything
-      that mutates a shared resource inside one project: builds, full suites, dev servers,
+   b. **Concurrency.** A project's build nodes may run together when their files are disjoint and no
+      shared resource is touched — compile is their only command, so no DB, port, suite or dev server
+      is in play. From the verify pass onward the old collision rule holds: never two verify or QA
+      nodes in one project at once (test database, dev-server port, build output, lockfile, migration
+      state). Independent projects always run together; read-only work (explorers) is unbounded.
+      Serialize anything that mutates a shared resource inside one project: full suites, dev servers,
       migrations, generated artifacts.
 
-   c. **Order the work, then close each unit.** Sequence tasks by dependency. What must pass before
-      a unit is done is the project's own call — its `AGENTS.md`, CI config, `Makefile` or scripts,
-      existing practice. Unless the project defines its own gates, the default is: the implementing
-      subagent self-checks narrow (build, lint, unit tests for what it touched), then runs the
-      project build and suite once; then one batch review with a fix round bounded at two passes;
-      then behavioral verification last. Builds and suites belong to the implementing subagent,
-      never the QA agent.
+   c. **Order the work, then close each unit.** Sequence tasks by dependency, ordering each project's
+      build work ahead of its single verify pass. What must pass before a unit is done is the
+      project's own call — its `AGENTS.md`, CI config, `Makefile` or scripts, existing practice.
+      Unless the project defines its own gates, the default is: a build pass writes code and its
+      tests and only compiles the packages it touched, tests included; then that project's verify
+      pass — the same implementing agent, resumed — runs build, lint, typecheck and the suite once and
+      fixes mechanical failures in the same session; QA's behavioral pass comes after verify; review
+      is static. Builds and suites belong to the verify pass, never the QA agent.
 
-   d. **Batch every review.** Independent tasks run parallel; each subagent pauses when done. When
-      the project defines a review convention, follow it; otherwise review is batch-level, never
-      per-subagent or per-project — separate reviews burn duplicate rounds and miss cross-boundary
-      mismatches (frontend calling backend contract).
+   d. **Batch every review.** Every independent task starts in the same batch — across projects and
+      within a project's build stage; only a shared file or shared resource serializes. Each subagent
+      pauses when done. When the project defines a review convention, follow it; otherwise review is
+      batch-level, never per-subagent or per-project — separate reviews burn duplicate rounds and
+      miss cross-boundary mismatches (frontend calling backend contract).
 
-   e. **One review pass: a single review-agent subagent, single invocation, scope not payload.**
-      The brief carries each repo root, the output of `git diff --stat`, the acceptance criteria
-      reference, an exclusion list, and an instruction to run `git diff` itself. NEVER paste diff
+   e. **One review pass: static, a single review-agent subagent, single invocation, scope not
+      payload.** The brief carries each repo root, the output of `git diff --stat`, the acceptance
+      criteria reference, an exclusion list, and an instruction to run `git diff` itself — the
+      reviewer runs no project command, no build, test, lint or package manager. NEVER paste diff
       text into a brief. Exclusion list, unless the excluded file is itself the change's source of
       truth: lockfiles, generated code (API clients, schema types, mocks, API docs), vendored
       directories, minified bundles, snapshots, `.notes/`. If the combined diff exceeds roughly
       1500 changed lines, review it in directory slices sequentially inside that one reviewer
       session, reporting once at the end.
 
-   f. Review returns findings: split by project, **resume the same implementing subagents** (pass the
-      saved `sessionID` back to the `subagent` tool with the findings verbatim, each its slice only),
-      not fresh spawns — resumed agents apply fixes from context already held. Fixes for different
-      projects run parallel; same-project findings go to that project's agent in one message. Each
-      fix self-checks narrow — by default no full-suite rerun for review fixes unless a fix crosses
-      package boundaries, and then the project's last implementing agent reruns the full suite once.
+   f. **One fix round.** Review returns findings: split by project, **resume the same implementing
+      subagents** (pass the saved `sessionID` back to the `subagent` tool with the findings verbatim,
+      each its slice only), not fresh spawns — resumed agents apply fixes from context already held.
+      Findings from review and QA are batched per project and go to that project's agent once, not
+      per gate. Fixes for different projects run parallel. The fix compiles what it touched and runs
+      the scoped verify — build, lint, typecheck and suite for the touched packages.
 
-   g. All fixes in: re-review the full combined diff once, same way; when the project defines no
-      review convention, bound it at two rounds — findings surviving the second pass stop and come to
-      the user.
+   g. Re-review the fix diff only, not the full combined diff, same static way; a finding that
+      survives this round stops and comes to the user.
 
-   h. **Behavioral verification, where the project calls for it, once, last.** One brief to one QA
-      subagent covering every touched project: verification on the running app against the acceptance
-      criteria. QA defects loop back exactly like review findings — resume the project's implementing
-      agent with the defect verbatim, it fixes and narrow re-checks, then the QA agent re-verifies
-      only the failed scenarios, never the whole pass. Reuse the same QA session for the
-      re-verification round: brief it with the failed scenario IDs only, not the whole pass and not a
-      fresh full brief. Defects surviving one fix round: stop, bring to user.
+   h. **Behavioral verification, after that project's verify pass; it may run concurrently with
+      review.** One QA subagent per project whose behavior changed, launched together; a flow that
+      spans projects gets its own QA subagent depending on both projects' verify passes. It runs
+      after the per-project QA agents — it carries their shared-resource tags, so it never runs
+      beside them. Each drives the behavioral TC rows — `Proof` of `api`, `ui`, `device` or `manual`
+      — on the running app against the acceptance criteria. QA findings are batched with review
+      findings into that one fix
+      round: the project's implementing agent fixes and runs the scoped verify, then the QA agent
+      re-runs only the failed scenarios. Reuse each QA session for the re-verification: brief it with
+      the failed scenario IDs only, not the whole pass and not a fresh full brief. Defects surviving
+      the fix round: stop, bring to user.
 
    i. **If something genuinely unclear**: use the **`question` tool** to clarify, then continue.
 
@@ -111,18 +123,21 @@ so a new agent works without a skill change. Enumerate once per session with `gl
 directories' agent definitions; keep the result in the plan, re-list only if the config changes.
 
 Route by capability, not name: backend → that language's engineering agent; web frontend → that
-framework's engineering agent; test strategy, E2E, browser verification → QA / UI testing agent;
-review of a produced diff → code review agent; containers, compose, images → container agent; schema,
-migrations, query performance → database agent; cross-cutting design → architecture review agent.
-Most specific fit wins; none fits → a general-purpose subagent.
+framework's engineering agent; mobile (native or cross-platform) → the mobile framework's engineering
+agent, or general-purpose when none is present; test strategy, E2E, browser verification → QA / UI
+testing agent; review of a produced diff → code review agent; containers, compose, images → container
+agent; schema, migrations, query performance → database agent; cross-cutting design → architecture
+review agent. Most specific fit wins; none fits → a general-purpose subagent.
 
 ## Briefing subagents
 
 Give each subagent: goal, files or package to work in, the search scope to confine itself to (the
 files, packages, or directories it should grep rather than read wide), applicable project
-conventions, what "done" means (the narrow build, lint, and unit commands for its packages pass, and
-the behavior under test is covered). Point at source files, acceptance criteria, and the recon digest
-— not restated spec. Scope to what asked — no opportunistic refactors.
+conventions, what "done" means (for a build pass, the packages it touched compile, tests included,
+and the behavior under test is covered; for a verify pass, every project command passes). Point at
+source files, acceptance criteria, and the recon digest — not restated spec. Build briefs also carry
+the review standards — the design's Shared contracts, project conventions, observability — so gates
+confirm instead of discover. Scope to what asked — no opportunistic refactors.
 
 Every brief carries this hard report contract, and the subagent follows it:
 
@@ -205,7 +220,10 @@ Verify the returned work by reading; never reproduce it.
 - Every criterion in the brief maps to a reported result, and commands carry exit codes.
 - A missing or contradicted item is a gap: report it, or request it from that same subagent in ~5
   lines — never close it by running the build, tests, or browser.
-- A project's suite run, where it has one, is attributed to the implementing subagent that ran it.
+- A project's suite run, where it has one, belongs to its verify pass and is attributed to the
+  implementing subagent that ran it, once per project.
+- Static review is the reviewer reading the diff itself; its `🧪 verify` findings go to the caller,
+  which decides who runs them, never the reviewer fixing them.
 - Publication stops at the rung the user named for the run; unstated, commit on the branch. Pushing,
   PRs, merges and shared-environment changes need the user's naming or a recorded project convention.
 

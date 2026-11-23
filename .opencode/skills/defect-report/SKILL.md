@@ -20,6 +20,10 @@ deterministically. No prose preamble, no praise filler, no "looks good".
 | 🟡 | risk | Edge case, race, leak, perf cliff, missing guard, design flaw |
 | 🔵 | nit | Style, naming, micro-perf — emit only when thorough review requested |
 | ❓ | question | Need author intent before judging |
+| 🧪 | verify | A claim that needs a command run to confirm — not a severity |
+
+`🧪 verify` is not a severity and the reviewer never fixes it: it records a runtime doubt the static
+review cannot settle, and the caller routes it to the owning fix round or runs it.
 
 ## Finding line
 
@@ -27,9 +31,16 @@ deterministically. No prose preamble, no praise filler, no "looks good".
 <path>:<line>: <emoji> <tier>: <problem>. <fix>.
 ```
 
+A `🧪 verify` line carries the command instead of a fix:
+
+```
+<path>:<line>: 🧪 verify: <claim>. Run: <command>.
+```
+
 One line per finding. Problem stated first, then the concrete fix — both tight. Order findings by
 severity descending (🔴 → 🟡 → 🔵 → ❓) so critical issues surface first; within a tier, file order,
-ascending line numbers.
+ascending line numbers. `🧪 verify` lines are not a severity: list them after the severity-ordered
+findings, before the totals.
 
 For QA frontend defects with no clean code line, use `<view/route>: <step>:` as the locator and
 attach the screenshot path.
@@ -42,9 +53,11 @@ Close every report with a totals line, then a one-sentence verdict:
 <path>:<line>: 🔴 bug: token expiry uses `<` not `<=`. Off-by-one allows expired tokens 1 tick.
 <path>:<line>: 🟡 risk: pool not closed on error path. Add `try/finally`.
 <path>:<line>: ❓ question: why duplicate `.trim()` here? Need author intent.
-totals: 1🔴 1🟡 1❓
+<path>:<line>: 🧪 verify: pool exhaustion under load is unproven. Run: `go test ./pool -run TestExhaust -count=100`.
+totals: 1🔴 1🟡 1❓ 1🧪
 summary: One real bug plus an error-path leak; small, focused fix set.
 ```
+Totals count every tier, `🧪 verify` included.
 
 Zero findings → `No issues.` (no totals line, no summary).
 
