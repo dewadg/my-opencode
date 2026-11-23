@@ -48,7 +48,7 @@ files: `sed -i`/`awk` beats N `edit` calls — single-quoted, no `/` or `&` in p
 (pick another delimiter), `git diff --stat` after to confirm only intended files moved. Never a
 Python script or `python3` heredoc to patch files: the count assert passes on the wrong anchor, the
 whole-file rewrite drops encoding and line endings, and a leftover `patch.py` reaches commits. Shell
-otherwise runs `npm`/`pnpm`/`nuxt`, `make` targets where the project has them, and `git`.
+otherwise runs `npm`/`pnpm`/`nuxt` scripts and `git`.
 
 ## Comments
 
@@ -63,21 +63,7 @@ the existing setup.
 
 ## Quality Assurance
 
-Gate before reporting done — run, don't assume. First discover the checks the project already
-defines in `package.json` scripts, a `Makefile`, CI config, or `AGENTS.md`; then run only the checks
-that exist — format, lint, type-check (the project's type-check script where TS, `vue-tsc` when
-present), a touched-package build where the toolchain allows it, and unit tests for the packages you
-touched — reporting each as `cmd` → exit code. Unit tests are the per-task gate: where the runner
-tangles unit and integration, isolate the unit scope by package path or the runner's own filter
-(`-t`, `--testPathPattern`); if it cannot be isolated, defer the suite rather than run it every task.
-The project's full build and suite run once at close-out after all implementation tasks for that
-project; the integration/E2E tier only where the project enforces it — never per task, never on a
-review fix. Those names are what to look for, not steps to add: never invent a command, add a config,
-or scaffold a test setup unasked. A check the project does not define is named absent in one line; a
-project with none at all is reported as "no project checks defined" and is not a blocker. A failing
-gate means the work is not done: fix it or report it
-failing.
-
+- ESLint vue rules clean
 - Lost reactivity: destructuring/spread of `reactive` audited
 - Coverage: project threshold, else 80%
 - Bundle: lazy routes, tree-shaking intact

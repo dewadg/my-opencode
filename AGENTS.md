@@ -159,28 +159,20 @@ review steps and environment checks are defaults applied only where a project de
 so project rituals are discovered from its own `AGENTS.md`, README and CI config during recon, never
 assumed, and an undiscoverable convention is asked once and journaled as a decision. Verification
 splits along the builder/QA line: the implementing subagent owns all build and test-script execution —
-by default a narrow format/lint/type-check/build/unit self-check for the packages it touched, using
-only the checks the project already defines — Go always ships `gofmt`, `vet`, `build`, `test`; a
-project with none reports "no project checks defined", never adds tooling — then the project's full
-build and suite **once** per project at close-out, the integration/E2E tier only where enforced, run
-by resuming that project's last implementing subagent after the others finish. The QA agent owns only
-behavioral verification on the running app (endpoints via hurl, browser/mobile flows from the user's
-point of view), never runs unit-test suites, and by default runs **once**, last, after the review
-loop closes — so fix rounds never re-trigger it, and QA defects loop back to the implementing agents
-with only the failed scenarios re-verified. One full run per project at a time — concurrent full
-builds collide on the test database, dev-server port, and build output. The review agent is static
-too: it judges the diff, surrounding code and the implementers' evidence, never build/lint/test/suite
-commands — those belong to the implementing agent. Each of the four language builders (`golang-eng`,
-`js-eng`, `vue-eng`, `react-eng`) carries that gate in its own prompt, because a subagent loads only
-its own file.
-If `qa-eng`'s tier-2 section, the `code` skill's Verifying section, `code`'s 4e reviewer brief,
-`tech-lead.md`'s clauses, `code-reviewer`'s scope and reply contract, `code`'s 4c gate list, or a
-builder's quality-assurance gate change, change the others with them.
-Briefs carry scope, not payload — no pasted diffs — and reports are capped and point at evidence
-paths, so the tech lead's context stays bounded across rounds; `defect-report`'s size rules and
-`code`'s briefing cap move together — change one, change the other. `code`'s Context discipline,
-`tech-lead.md`'s reading rule, and `qa-eng`'s context discipline express one premise — tool output
-and turn count dominate cost — so change them together.
+by default a narrow build/lint/unit self-check for the packages it touched, then the full project
+build and suite **once** per project, run by resuming that project's last implementing subagent after
+the others finish. The QA agent owns only behavioral verification on the running app (endpoints via
+hurl, browser/mobile flows from the user's point of view), never runs unit-test suites, and by default
+runs **once**, last, after the review loop closes — so fix rounds never re-trigger it, and QA defects
+loop back to the implementing agents with only the failed scenarios re-verified. One full run per
+project at a time — concurrent full builds collide on the test database, dev-server port, and build
+output.
+If `qa-eng`'s tier-2 section, the `code` skill's Verifying section, or `tech-lead.md`'s clauses
+change, change the other two with them. Briefs carry scope, not payload — no pasted diffs — and
+reports are capped and point at evidence paths, so the tech lead's context stays bounded across
+rounds; `defect-report`'s size rules and `code`'s briefing cap move together — change one, change
+the other. `code`'s Context discipline, `tech-lead.md`'s reading rule, and `qa-eng`'s context
+discipline express one premise — tool output and turn count dominate cost — so change them together.
 
 **Breakdown.** The `breakdown` skill orchestrates in the main thread (it must — it spawns
 `code-diver`, and subagents cannot spawn subagents): requirements `R1…Rn` → `business-impact` skill →

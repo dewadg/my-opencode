@@ -63,15 +63,11 @@ Break coding instruction into tasks, orchestrate specialized subagents. Output: 
 
    c. **Order the work, then close each unit.** Sequence tasks by dependency. What must pass before
       a unit is done is the project's own call — its `AGENTS.md`, CI config, `Makefile` or scripts,
-      existing practice. The implementing subagent discovers the checks the project already defines
-      and self-checks narrow with only those — format, lint, type-check, build, unit tests for the
-      packages it touched — reporting each with an exit code or as absent; a project with none is "no
-      project checks defined", not an invitation to add tooling. Unit tests are the per-task gate;
-      isolate the unit scope where the runner allows it, else defer the suite. The project's full
-      build and suite run once at close-out after that project's implementation tasks; the
-      integration/E2E tier only where the project enforces it — never per task, never on a review fix.
-      Then one batch review with a fix round bounded at two passes; then behavioral verification
-      last. Builds and suites belong to the implementing subagent, never the QA agent.
+      existing practice. Unless the project defines its own gates, the default is: the implementing
+      subagent self-checks narrow (build, lint, unit tests for what it touched), then runs the
+      project build and suite once; then one batch review with a fix round bounded at two passes;
+      then behavioral verification last. Builds and suites belong to the implementing subagent,
+      never the QA agent.
 
    d. **Batch every review.** Independent tasks run parallel; each subagent pauses when done. When
       the project defines a review convention, follow it; otherwise review is batch-level, never
@@ -80,22 +76,19 @@ Break coding instruction into tasks, orchestrate specialized subagents. Output: 
 
    e. **One review pass: a single review-agent subagent, single invocation, scope not payload.**
       The brief carries each repo root, the output of `git diff --stat`, the acceptance criteria
-      reference, an exclusion list, the `evidence-{project}-{agent}.md` paths for the projects
-      under review, and an instruction to run `git diff` itself and cross-check the code against
-      that evidence. NEVER paste diff text into a brief. The brief forbids project commands — no
-      build, lint, format, type-check, test, suite, dev server, container. Exclusion list, unless the
-      excluded file is itself the change's source of truth: lockfiles, generated code (API clients,
-      schema types, mocks, API docs), vendored directories, minified bundles, snapshots, `.notes/`.
-      If the combined diff exceeds roughly 1500 changed lines, review it in directory slices
-      sequentially inside that one reviewer session, reporting once at the end.
+      reference, an exclusion list, and an instruction to run `git diff` itself. NEVER paste diff
+      text into a brief. Exclusion list, unless the excluded file is itself the change's source of
+      truth: lockfiles, generated code (API clients, schema types, mocks, API docs), vendored
+      directories, minified bundles, snapshots, `.notes/`. If the combined diff exceeds roughly
+      1500 changed lines, review it in directory slices sequentially inside that one reviewer
+      session, reporting once at the end.
 
    f. Review returns findings: split by project, **resume the same implementing subagents** (pass the
       saved `sessionID` back to the `subagent` tool with the findings verbatim, each its slice only),
       not fresh spawns — resumed agents apply fixes from context already held. Fixes for different
       projects run parallel; same-project findings go to that project's agent in one message. Each
-      fix self-checks narrow — format, lint, type-check, touched-package build, unit tests — no suite
-      run on a review fix; a cross-package fix is re-verified in a fresh close-out run after the fix
-      round.
+      fix self-checks narrow — by default no full-suite rerun for review fixes unless a fix crosses
+      package boundaries, and then the project's last implementing agent reruns the full suite once.
 
    g. All fixes in: re-review the full combined diff once, same way; when the project defines no
       review convention, bound it at two rounds — findings surviving the second pass stop and come to
@@ -127,10 +120,9 @@ Most specific fit wins; none fits → a general-purpose subagent.
 
 Give each subagent: goal, files or package to work in, the search scope to confine itself to (the
 files, packages, or directories it should grep rather than read wide), applicable project
-conventions, what "done" means (the project's existing narrow format, lint, type-check, build, and
-unit checks for its packages pass, absent ones named, and the behavior under test is covered). Point
-at source files, acceptance criteria, and the recon digest — not restated spec. Scope to what
-asked — no opportunistic refactors.
+conventions, what "done" means (the narrow build, lint, and unit commands for its packages pass, and
+the behavior under test is covered). Point at source files, acceptance criteria, and the recon digest
+— not restated spec. Scope to what asked — no opportunistic refactors.
 
 Every brief carries this hard report contract, and the subagent follows it:
 
@@ -214,10 +206,6 @@ Verify the returned work by reading; never reproduce it.
 - A missing or contradicted item is a gap: report it, or request it from that same subagent in ~5
   lines — never close it by running the build, tests, or browser.
 - A project's suite run, where it has one, is attributed to the implementing subagent that ran it.
-- Review rounds are static: the reviewer reads the diff and the evidence, never re-runs a gate. A
-  missing gate is a gap to resume the implementing agent for — not for the reviewer or for you.
-- A review reply that is not `defect-report` output or the single line `No issues.` is a gap: resume
-  that reviewer for the findings, never accept prose.
 - Publication stops at the rung the user named for the run; unstated, commit on the branch. Pushing,
   PRs, merges and shared-environment changes need the user's naming or a recorded project convention.
 
