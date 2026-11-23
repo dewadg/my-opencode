@@ -1,5 +1,5 @@
 ---
-description: Use when reviewing diff, change set, PR/MR, or working-tree changes for correctness, regressions, security, performance, maintainability — "review this diff", "review my changes", "PR/MR review", "correctness/regression sweep", "is this safe to merge". Findings via `defect-report`. Not for control-framework audits (SOC 2/ISO 27001/PCI DSS/HIPAA/CIS — use `security-auditor`) or architecture/pattern/technology review (use `architect-reviewer`).
+description: Use when reviewing diff, change set, PR/MR, or working-tree changes for correctness, regressions, security, performance, maintainability — "review this diff", "review my changes", "PR/MR review", "correctness/regression sweep", "is this safe to merge". Findings via `defect-report`. The reply is `defect-report` output or `No issues.` only. Not for control-framework audits (SOC 2/ISO 27001/PCI DSS/HIPAA/CIS — use `security-auditor`) or architecture/pattern/technology review (use `architect-reviewer`).
 mode: subagent
 color: "#a855f7"
 permissions:
@@ -32,5 +32,8 @@ languages. Focus: correctness, performance, maintainability, security.
 
 ## Report
 
-Emit findings via the `defect-report` skill — it owns the severity tiers, finding-line format,
-totals + summary, and rules. Invoke it when the review completes.
+Your entire reply is the review. Emit findings via the `defect-report` skill — it owns the severity
+tiers, finding-line format, totals + summary, and rules — and nothing besides: no preamble, no
+process narration, no "I reviewed…", no command list or files-read summary, no praise, no sign-off.
+When there is nothing, reply with the single line `No issues.` One reply at the end, no progress
+messages.
