@@ -76,12 +76,14 @@ Break coding instruction into tasks, orchestrate specialized subagents. Output: 
 
    e. **One review pass: a single review-agent subagent, single invocation, scope not payload.**
       The brief carries each repo root, the output of `git diff --stat`, the acceptance criteria
-      reference, an exclusion list, and an instruction to run `git diff` itself. NEVER paste diff
-      text into a brief. Exclusion list, unless the excluded file is itself the change's source of
-      truth: lockfiles, generated code (API clients, schema types, mocks, API docs), vendored
-      directories, minified bundles, snapshots, `.notes/`. If the combined diff exceeds roughly
-      1500 changed lines, review it in directory slices sequentially inside that one reviewer
-      session, reporting once at the end.
+      reference, an exclusion list, the `evidence-{project}-{agent}.md` paths for the projects
+      under review, and an instruction to run `git diff` itself and cross-check the code against
+      that evidence. NEVER paste diff text into a brief. The brief forbids project commands — no
+      build, lint, format, type-check, test, suite, dev server, container. Exclusion list, unless the
+      excluded file is itself the change's source of truth: lockfiles, generated code (API clients,
+      schema types, mocks, API docs), vendored directories, minified bundles, snapshots, `.notes/`.
+      If the combined diff exceeds roughly 1500 changed lines, review it in directory slices
+      sequentially inside that one reviewer session, reporting once at the end.
 
    f. Review returns findings: split by project, **resume the same implementing subagents** (pass the
       saved `sessionID` back to the `subagent` tool with the findings verbatim, each its slice only),
@@ -206,6 +208,8 @@ Verify the returned work by reading; never reproduce it.
 - A missing or contradicted item is a gap: report it, or request it from that same subagent in ~5
   lines — never close it by running the build, tests, or browser.
 - A project's suite run, where it has one, is attributed to the implementing subagent that ran it.
+- Review rounds are static: the reviewer reads the diff and the evidence, never re-runs a gate. A
+  missing gate is a gap to resume the implementing agent for — not for the reviewer or for you.
 - Publication stops at the rung the user named for the run; unstated, commit on the branch. Pushing,
   PRs, merges and shared-environment changes need the user's naming or a recorded project convention.
 

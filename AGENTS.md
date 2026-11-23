@@ -166,13 +166,15 @@ hurl, browser/mobile flows from the user's point of view), never runs unit-test 
 runs **once**, last, after the review loop closes — so fix rounds never re-trigger it, and QA defects
 loop back to the implementing agents with only the failed scenarios re-verified. One full run per
 project at a time — concurrent full builds collide on the test database, dev-server port, and build
-output.
-If `qa-eng`'s tier-2 section, the `code` skill's Verifying section, or `tech-lead.md`'s clauses
-change, change the other two with them. Briefs carry scope, not payload — no pasted diffs — and
-reports are capped and point at evidence paths, so the tech lead's context stays bounded across
-rounds; `defect-report`'s size rules and `code`'s briefing cap move together — change one, change
-the other. `code`'s Context discipline, `tech-lead.md`'s reading rule, and `qa-eng`'s context
-discipline express one premise — tool output and turn count dominate cost — so change them together.
+output. The review agent is static too: it judges the diff, surrounding code and the implementers'
+evidence, never build/lint/test/suite commands — those belong to the implementing agent.
+If `qa-eng`'s tier-2 section, the `code` skill's Verifying section, `code`'s 4e reviewer brief,
+`tech-lead.md`'s clauses, or `code-reviewer`'s scope section change, change the others with them.
+Briefs carry scope, not payload — no pasted diffs — and reports are capped and point at evidence
+paths, so the tech lead's context stays bounded across rounds; `defect-report`'s size rules and
+`code`'s briefing cap move together — change one, change the other. `code`'s Context discipline,
+`tech-lead.md`'s reading rule, and `qa-eng`'s context discipline express one premise — tool output
+and turn count dominate cost — so change them together.
 
 **Breakdown.** The `breakdown` skill orchestrates in the main thread (it must — it spawns
 `code-diver`, and subagents cannot spawn subagents): requirements `R1…Rn` → `business-impact` skill →

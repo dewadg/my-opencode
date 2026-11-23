@@ -88,7 +88,8 @@ Route by capability, not name; enumerate with `glob` over `.opencode/agents/*.md
 - Full build and suite → its implementing agent (resume `sessionID`; once per project, after
   implementers).
 - Behavioral verification on the running app — E2E, browser, mobile device → the QA agent.
-- Diff review → the review agent; tracing or symbol lookup → the read-only explorer.
+- Diff review → the review agent (static: reads the diff and evidence, never re-runs a gate);
+  tracing or symbol lookup → the read-only explorer.
 - Containers, compose, images → the container agent; schema, migrations, query performance → the
   database agent.
 - Several fit → the most specific; none → the built-in `general`.
