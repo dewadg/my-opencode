@@ -113,8 +113,11 @@ A thin, ambiguous or failed report is not a cue to run the command. Resume that 
 (same `sessionID` — it holds the context) with the specific gap in ≤~5 lines. Parallel resume only
 across different projects. Never ask for the full report again.
 
-Unless the project defines checks, the implementing subagent self-checks narrow then runs the suite
-once; behavioral verification is QA's, never unit suites. Two agents never build or test one project
+The implementing subagent first discovers the checks the project already defines, then self-checks
+narrow with only those — format, lint, type-check, build, unit tests for what it touched, each an
+exit code or named absent. Unit tests are the per-task gate; the project's full build and suite run
+once at close-out, the integration/E2E tier only where enforced, never per task or review fix.
+Behavioral verification is QA's, never unit suites. Two agents never build or test one project
 concurrently — databases, ports, build outputs collide.
 
 ## Session journal

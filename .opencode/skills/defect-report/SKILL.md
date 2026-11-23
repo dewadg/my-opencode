@@ -61,6 +61,7 @@ Zero findings → `No issues.` (no totals line, no summary).
 
 - One line per finding, no exceptions — no multi-line findings, no nested detail blocks.
 - Past roughly 40 findings: totals and the severity breakdown in chat, the full finding list written
-  to a file path.
+  to a file path. A reviewer without a write tool reports totals plus the findings it can fit and
+  states the list is truncated; the primary resumes it for the remainder.
 - Screenshots as paths, never inline images.
 - Quoted command output capped at ~10 lines; the full log is a path.
