@@ -85,10 +85,14 @@ Route by capability, not name; enumerate with `glob` over `.opencode/agents/*.md
 `~/.config/opencode/agents/*.md`.
 
 - Implementation → the engineering agent for that language and framework.
-- Full build and suite → its implementing agent (resume `sessionID`; once per project, after
-  implementers).
-- Behavioral verification on the running app — E2E, browser, mobile device → the QA agent.
-- Diff review → the review agent; tracing or symbol lookup → the read-only explorer.
+- The verify pass (full build, lint, typecheck and suite, once per project) → the project's
+  implementing agent, resumed (`sessionID`) after the implementers; it fixes mechanical failures in
+  the same session.
+- Behavioral verification on the running app — E2E, browser, mobile device → the QA agent, after
+  that project's verify pass is done and concurrently with review; per-project QA agents run
+  together, while a flow-spanning pass runs after them, never beside them.
+- Static diff review → the review agent (reads only, never a project command); tracing or symbol
+  lookup → the read-only explorer.
 - Containers, compose, images → the container agent; schema, migrations, query performance → the
   database agent.
 - Several fit → the most specific; none → the built-in `general`.
@@ -112,9 +116,18 @@ A thin, ambiguous or failed report is not a cue to run the command. Resume that 
 (same `sessionID` — it holds the context) with the specific gap in ≤~5 lines. Parallel resume only
 across different projects. Never ask for the full report again.
 
-Unless the project defines checks, the implementing subagent self-checks narrow then runs the suite
-once; behavioral verification is QA's, never unit suites. Two agents never build or test one project
-concurrently — databases, ports, build outputs collide.
+The builder compiles the packages it touched, tests included; lint, typecheck and the suite run once
+per project in its verify pass; behavioral verification is QA's. Build passes in one project may
+compile in parallel on disjoint paths; from the verify pass onward, verify and QA never overlap in a
+project, and independent projects always run in parallel. One full run per project at a time —
+databases, ports, build outputs collide.
+
+## Fix rounds
+
+Gate reports are held until the gates of that layer finish, then each project's findings go to its
+builder once, verbatim, with the one-fix-round bound stated — no per-gate wake-ups. Review is static;
+QA starts after verify and may run concurrently with review. A finding that survives the fix round
+goes to the user.
 
 ## Session journal
 

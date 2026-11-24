@@ -158,15 +158,16 @@ autonomy, attribution, one agent per project) bind everywhere, while stage seque
 review steps and environment checks are defaults applied only where a project defines no convention —
 so project rituals are discovered from its own `AGENTS.md`, README and CI config during recon, never
 assumed, and an undiscoverable convention is asked once and journaled as a decision. Verification
-splits along the builder/QA line: the implementing subagent owns all build and test-script execution —
-by default a narrow build/lint/unit self-check for the packages it touched, then the full project
-build and suite **once** per project, run by resuming that project's last implementing subagent after
-the others finish. The QA agent owns only behavioral verification on the running app (endpoints via
-hurl, browser/mobile flows from the user's point of view), never runs unit-test suites, and by default
-runs **once**, last, after the review loop closes — so fix rounds never re-trigger it, and QA defects
-loop back to the implementing agents with only the failed scenarios re-verified. One full run per
-project at a time — concurrent full builds collide on the test database, dev-server port, and build
-output.
+splits along the builder/QA line: the builder compiles the packages it touched, tests included, in
+the build stage; build, lint, typecheck and the suite run **once** per project in its verify node, owned by
+that project's last implementing subagent resumed after the others finish, which fixes mechanical
+failures in the same session. The QA agent owns only behavioral verification on the running app
+(endpoints via hurl, browser/mobile flows from the user's point of view), never builds or runs
+suites, and runs after verify — concurrently with static review — driving only the behavioral TC
+rows. Findings from review and QA are batched per project into **one fix round**; re-review is scoped
+to the fix diff, QA re-runs only the failed scenarios, and a survivor goes to the user. One full run
+per project at a time — concurrent full builds collide on the test database, dev-server port, and
+build output.
 If `qa-eng`'s tier-2 section, the `code` skill's Verifying section, or `tech-lead.md`'s clauses
 change, change the other two with them. Briefs carry scope, not payload — no pasted diffs — and
 reports are capped and point at evidence paths, so the tech lead's context stays bounded across
@@ -195,8 +196,22 @@ Design artifact format changes (runtime path, `canvas.json` keys, `<dc-import>` 
 
 **Findings.** The `defect-report` skill owns the severity-tagged finding-report format (tier table,
 finding-line shape, totals line, rules) shared by the `code-reviewer` and `qa-eng` agents; both
-invoke it instead of restating the format. If the format changes there, both agents' reports change
-with it.
+invoke it instead of restating the format. Its tier table also carries `🧪 verify` — a claim that
+needs a command run to confirm, written with that command and routed by the orchestrator to the
+owning builder's fix round, or run by the caller when no round opens; it is not a severity and the
+reviewer never fixes it. If the format changes there, both agents' reports change with it.
+
+**Task-graph stages.** A `task-graph` plan's `Gate:` values are `build | verify | qa | review | human
+| none`, default `build`. Stage order is build → verify → review, with `qa` in the verify stage: both
+`qa` and `review` depend only on the `verify` node and run concurrently, and the header rolls `qa`
+into verify and `human` into review. The ready set is conflict-only with no numeric cap: same-project
+build nodes may compile in parallel on disjoint paths, while verify and QA never overlap in one
+project. Any changed file reopens every gate node downstream of it, and one fix round covers the
+batched findings of both gates. A fullstack plan puts the API/schema contract in an early node and
+builds backend, web and mobile against it in parallel: clients depend on the contract, not the
+backend implementation. A change to the stage model touches
+`.openspec/schemas/task-graph/schema.yaml`, its `README.md` and templates, the `task-graph` skill,
+`code`, `tech-lead`, `code-reviewer` and this file.
 
 **Security audit.** The `security-audit` skill (adapted from Cloudflare's MIT `security-audit-skill`)
 is source-only: it reads the target and never builds, runs, or probes it, so every claim that needs

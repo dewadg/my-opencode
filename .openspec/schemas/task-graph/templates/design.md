@@ -30,9 +30,29 @@
 
 ## Test scenarios
 
-| ID | Scenario | Given | When | Then |
-|---|---|---|---|---|
-| TC-<!-- id --> | <!-- scenario --> | <!-- given --> | <!-- when --> | <!-- then --> |
+<!-- Requirement cites the spec requirement the row proves. Proof is one of unit | integration |
+     api | ui | device | manual: unit and integration route to verify; api, ui, device and manual
+     route to QA (ui is web, device is mobile). -->
+
+| ID | Scenario | Given | When | Then | Requirement | Proof |
+|---|---|---|---|---|---|---|
+| TC-<!-- id --> | <!-- scenario --> | <!-- given --> | <!-- when --> | <!-- then --> | <!-- requirement name --> | <!-- unit --> |
+
+## Verification
+
+<!-- Per project: the migrate, build, typecheck, lint and suite commands the verify stage runs, or
+     `none`. State which behavior the suite proves and which only QA proves. Examples: Go API,
+     `make migrate`, `go build`, `go vet`, `golangci-lint`, `go test`; web, nothing, `tsc --noEmit`,
+     eslint, `vitest run`, build; mobile, nothing, `flutter analyze`, test, build. -->
+
+| Project | Migrate | Build | Typecheck | Lint | Suite |
+|---|---|---|---|---|---|
+| <!-- project --> | <!-- command or none --> | <!-- command --> | <!-- command or none --> | <!-- command or none --> | <!-- command or none --> |
+
+## Observability
+
+<!-- Log events with their levels and fields, trace spans, metric names and labels, and what must
+     never be logged. `none` needs the reason. Review checks this section against the code. -->
 
 ## Risks / Trade-offs
 
