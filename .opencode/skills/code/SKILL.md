@@ -166,9 +166,11 @@ Everything this run produces goes into one session directory:
 `.notes/code/{YYYY}-{MM}-{DD}-{slug}/`, or `{YYYY}-{MM}-{DD}-{TICKET}-{slug}/` when a ticket is
 known — date prefix always, ticket segment before the slug. That `<session dir>` is what briefs and
 evidence paths point at; the caller may name a different root per the project's own `AGENTS.md`, and
-the layout below still applies.
+the layout below still applies. When the run has more than two tasks or more than one project, start
+the journal at the plan and keep it current per the `impl-journal` skill.
 
-- `{stem}-journal.md` — the run's journal, sharing the directory's stem.
+- `{stem}-journal.md` — the run's journal, sharing the directory's stem; the `impl-journal` skill
+  owns its format and rules.
 - `recon-{project}.md` — one per project, from pre-flight recon.
 - `evidence-{project}-{agent}.md` — one per subagent, one writer per file.
 - `review-round-{n}.md` — the findings of review round `n`.

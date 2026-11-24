@@ -2,7 +2,8 @@
 
 An OpenSpec workflow schema that replaces the flat task checklist with an explicit work graph.
 `specs` is unchanged from `spec-driven`; `design` carries the project's design rules;
-`proposal.md` is dropped; `tasks.md` is the graph and `graph.md` is its one-shot snapshot.
+`proposal.md` is dropped; `tasks.md` is the graph, `graph.md` is its one-shot snapshot, and
+`journal.md` is the apply-time decision log, owned by the `impl-journal` skill.
 
 Execution runs in three stages. **Build** writes the code and its tests and only compiles the
 touched packages, so builds stay parallel instead of serializing on a test database. **Verify**
@@ -25,6 +26,9 @@ cp -R <this-directory> "${XDG_DATA_HOME:-$HOME/.local/share}/openspec/schemas/ta
 A user-level copy serves every project and is overridden by a project-local one. Confirm with
 `openspec schemas`: it lists `task-graph`, annotated `(user override)` when the userspace copy is
 the one resolved.
+
+The apply instruction names the `impl-journal` skill, so copy `.opencode/skills/impl-journal/` from
+this repo into the project's or the user's `~/.config/opencode/skills/` alongside the schema.
 
 Then either:
 
@@ -282,6 +286,20 @@ status and each command's exit code (`verify-go.md`), a QA node reports scenario
 - After archive, `Evidence:` lines are historical pointers whose targets are gone by design. Do not
   rewrite, remove or renumber them.
 
+## Journal
+
+Apply-time decisions live at `openspec/changes/<change>/journal.md`, relative to the change. It is
+committed and archived with the change, unlike `evidence/`, which is scratch and never committed.
+
+It is not an artifact: OpenSpec does not generate it, list it or gate on it, so `openspec status`,
+`validate` and the archive task gate ignore it, and `apply.tracks` stays `tasks.md`.
+
+`design.md` holds the decisions made before apply; the journal holds the ones apply forces. A gate
+verdict is not a journal entry — its durable record is the marker or summary on the task line.
+
+The `impl-journal` skill owns the format, the ids and the one-writer rule; this schema only names
+that skill in its apply instruction.
+
 ## Planning rules
 
 - **Width.** Every node that can start without another's output shares that layer. Extract a shared
@@ -398,6 +416,7 @@ habit.
 
 - Before `openspec archive`, empty the change's evidence directory: `rm -rf <change-dir>/evidence`.
   Delete rather than move — nothing reads it afterwards, and the durable record is `tasks.md`.
+- Only `evidence/` is deleted: `journal.md` stays with the change and archives with it.
 - The rule ships as project `operations.archive.guidance`, because `schema.yaml` has no archive
   hook: its loader accepts `name`, `version`, `description`, `artifacts[]` and `apply` only. The
   `openspec instructions archive` workflow injects that guidance.
@@ -430,6 +449,8 @@ operations:
   `operations.apply.guidance`: `openspec instructions archive` injects it, and neither lives in
   `schema.yaml`.
 - `graph.md` is committed and travels with the change when archived; it is never regenerated.
+- `journal.md` is apply-time output, not an artifact and not a tracked task file: it is committed
+  and travels with the change.
 - `evidence/` never travels with the change: it is gitignored and emptied by the archive step
   ([Archive](#archive)), so `Evidence:` lines in an archived change point at files that are gone.
 - Only the loader keys OpenSpec 1.16 accepts are used in `schema.yaml`: `name`, `version`,
