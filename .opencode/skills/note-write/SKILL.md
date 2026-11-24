@@ -3,8 +3,9 @@ name: note-write
 description: >
   Write or update a note in the shared format: frontmatter (`tags`, `projects`, `created`,
   `updated`, `related`, `description`), filename `{YYYY}-{MM}-{DD}[-{TICKET}]-slug.md`, `.notes/`
-  location, one directory per run, archived in one move. Use for "write a note", "journal this",
-  "record this decision". Not for searching notes (note-search).
+  location, one directory per run, archived in one move. Use for "write a note", "save what we
+  learned", "note this for next time". Not for an implementation journal (impl-journal), not for
+  searching notes (note-search).
 
 ---
 
@@ -12,12 +13,12 @@ Write efficient notes for future references.
 
 ## When invoked
 
-- The user asks to persist something: "write a note about…", "journal this", "save what we
-  learned", "record this decision", "note this for next time".
+- The user asks to persist something: "write a note about…", "save what we learned", "note this for
+  next time".
 - Another skill hands off a finding to keep — an estimate gap, a resolved question, a decision the
   next session should not re-derive.
-- A multi-task or multi-project session needs a durable record: the note becomes the session's
-  journal, not a chat transcript.
+- A multi-task or multi-project session needs a durable record: the implementation journal is
+  `impl-journal`'s job; this skill writes the surrounding notes.
 - The user asks to update an existing note (bump `updated`, amend the body, fix `related:`).
 
 Not for reading notes back (note-search) or for a format another skill already owns — an RCA or a

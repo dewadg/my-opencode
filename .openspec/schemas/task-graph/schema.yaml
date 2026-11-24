@@ -356,6 +356,13 @@ apply:
        task line, never a path to its evidence.
     8. Invalidation: a changed file reopens every gate node downstream of it.
 
+    Use the `impl-journal` skill to record every decision the plan did not make, as it is made.
+    The applying orchestrator is the only writer, and a node's agent reports a decision in its
+    result rather than editing the file. The journal is `journal.md` in the change directory,
+    committed with the change; it is not an artifact, so `openspec status`, `validate` and the
+    archive task gate ignore it, and `apply.tracks` stays `tasks.md`. A gate verdict is not a
+    journal entry: its durable record is the marker or summary on the task line.
+
     Pause on blockers or material ambiguity. Do not invent a task to satisfy a
     dependency, and do not start a blocked node because it looks independent. Project
     apply-time doctrine belongs in `operations.apply.guidance` in openspec/config.yaml,

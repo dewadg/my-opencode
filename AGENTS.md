@@ -123,11 +123,12 @@ template (analysis sections) the same way; the `analyze` command invokes `design
 the design-doc note. If either skill's section template changes, the command that references those
 sections must change with it.
 
-A `code` session with more than two tasks or more than one project also journals: the tech lead is its
-single writer, and `tech-lead.md` owns the journal's path and skeleton —
-`.notes/code/{YYYY}-{MM}-{DD}[-{TICKET}]-{slug}/` with the same-stem `-journal.md` inside, archived by
-one `mv` to `.notes/code/archive/`. One writer per file; the report cap bounds the message back, never
-the record.
+The `impl-journal` skill owns the implementation journal's format, ids, skeleton and write
+boundaries; a `code` run writes `.notes/code/{...}/{stem}-journal.md` (archived by one `mv`) and a
+`task-graph` apply writes `<change>/journal.md`. The run's orchestrator is the single writer;
+`tech-lead.md` keeps only the writing duty under `code`, not the format, and `schema.yaml`'s apply
+instruction names the same skill, so a format change touches the skill, `code/SKILL.md`,
+`schema.yaml` and this contract together.
 
 **Orchestrators.** The `analyze` and `investigate` commands and the `code` skill share one
 architecture: plan the work as a checklist, delegate every project-level unit of work to a subagent

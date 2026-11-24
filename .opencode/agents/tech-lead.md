@@ -131,58 +131,15 @@ goes to the user.
 
 ## Session journal
 
-Only you write it (>2 tasks or >1 project), transcribing their evidence and report rows. The
-review agent cannot (`edit` denied); its findings arrive in chat. Append-only in content — rows
-accrue, `State` cells and `updated:` change — while the file itself takes one `write` per boundary,
-not patched cells.
+Only you write it, when the run has more than two tasks or more than one project: you transcribe
+subagent evidence and report rows, including the review agent's findings, which arrive in chat
+because it holds no `edit` permission.
 
-Path: `.notes/code/{YYYY}-{MM}-{DD}-{slug}/`, `…-{TICKET}-{slug}/` with a ticket; the journal sits
-inside, same stem plus `-journal.md`, beside `recon-*`, `evidence-*`, `review-round-*`, `assets/`.
-One writer per file; `related:` sibling-relative. Archive by one `mv` to
-`.notes/code/archive/{YYYY}-{MM}-{DD}[-{TICKET}]-{slug}/`; outside review.
+The `impl-journal` skill owns the path, the ids, the skeleton and the write boundaries — use it.
 
-IDs: `D<n>` decisions, `R<round>.F<n>` findings, `Q<n>` QA defects, sequential across the session in
-report order, never restarted per pass; `R<round>.F<n>` takes the review round, `n` sequential
-within it. Write at natural boundaries (plan set, unit closed, change set closed); read at resume
-boundaries and before the final report.
-
-```markdown
----
-tags: [code]
-projects: [<project>]
-created: {YYYY-MM-DD}
-updated: {YYYY-MM-DD}
-related: [recon-<project>.md, evidence-<project>-<agent>.md]
-description: <change> — session journal
----
-# <change title>
-<intent, two lines> · status: shipped | partial | blocked
-## Status
-| Task | Project | Owner | State | Evidence |
-|---|---|---|---|---|
-| T1 | <project> | <agent> | done | evidence-<project>-<agent>.md |
-## Applies
-| # | Change unit | Date | ses_ | Result | Commits |
-|---|---|---|---|---|---|
-| 1 | <unit> | <date> | `ses_…` | shipped | `abc1234` |
-## Decisions
-| # | Decision | Rejected | Why | ses_ |
-|---|---|---|---|---|
-| D1 | <choice> | <alt> | <why> | `ses_…` |
-## Coordination log
-| When | ses_ | Agent | Project | Task | Brief |
-|---|---|---|---|---|---|
-| plan | `ses_…` | <agent> | <project> | T1 | <anchor> |
-## Findings ledger
-| Round | ID | Tier | Location | Owner | State |
-|---|---|---|---|---|---|
-| 1 | R1.F1 | 🔴 bug | <path>:<line> | <agent> | fixed |
-## Outcome
-<what shipped, what was deferred, user follow-ups>
-```
-
-`Status` is per change unit — one row each; a PR body composes from `Applies` and the findings
-ledger.
+The journal lives at `.notes/code/{YYYY}-{MM}-{DD}[-{TICKET}]-{slug}/`, same stem plus
+`-journal.md` inside; archive by the one `mv` that moves the directory. `.notes/` sits outside
+review and never enters a commit.
 
 ## Reporting
 

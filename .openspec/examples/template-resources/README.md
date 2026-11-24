@@ -31,6 +31,8 @@ A rewrite of the archived change at
   than in the change design.
 - Every task is `[x]`, matching the archived state, so the board shows every node done and no
   runnable batch.
+- `journal.md` records the four apply-time decisions — the inline sprite, the fixed registry slice,
+  the declared MIME, and docs listing templates by URI — in the `impl-journal` skill's format.
 
 The three `evidence/*.md` files are kept only to show each stage's report shape; in a real change
 that directory is gitignored and deleted before archive.

@@ -104,11 +104,13 @@ step.
 |---|---|
 | `note-write` | Persist knowledge as a dated, tagged markdown note |
 | `note-search` | Retrieve past notes by project, topic, ticket, or date |
+| `impl-journal` | One implementation journal per run — decisions, status, findings, outcome; shared by the `code` skill and a `task-graph` apply |
 
 Notes live in `.notes/` (or wherever the project's `AGENTS.md` says), named
 `{YYYY}-{MM}-{DD}[-{TICKET}]-slug.md`, with `tags` / `projects` / `created` / `updated` / `related` /
-`description` frontmatter. The orchestrator skills read and write this format, so the two note skills
-must stay in sync.
+`description` frontmatter. The orchestrator skills read and write this format, so `note-write` and
+`note-search` must stay in sync. The `impl-journal` skill owns the implementation journal's format
+and rules for both the `code` skill and a `task-graph` apply.
 
 ### API & testing
 
