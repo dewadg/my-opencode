@@ -35,10 +35,15 @@ curated subset, not a mirror.
   Supporting scripts and `references/` (long examples, checklists, per-seam briefs) live alongside
   (e.g. `.opencode/skills/telegram-notify/scripts/send_telegram.sh`).
 - `opencode.example.json` — example `mcp.servers` block (`context7`, `gitlab`, `goland`,
-  `chrome-devtools`, `figma`, `mobile-device`); merge it into a project's or the global
-  `~/.config/opencode/opencode.json`. Secrets are `{env:VAR}` references, never literals. `goland`
-  is main-conversation-only — no agent is restricted to it. The GitLab server defaults to
-  `GITLAB_READ_ONLY_MODE: "true"`; flip it to `"false"` only when you want issue/MR writes.
+  `chrome-devtools`, `figma`, `mobile-device`), the top-level `model` and `agents` pins (native V2
+  object form — `providerID`/`model`/`variant`, never a `#variant` string or a separate `variant`
+  field), and the `permissions` array of shell bans (native V2 `action`/`resource`/`effect` rules —
+  never the deprecated V1 `permission.bash` map); merge them into a project's or the global
+  `~/.config/opencode/opencode.json`. Every agent under `.opencode/agents/` except the `tech-lead`
+  primary has an entry; an agent without one runs on the session model. Secrets are `{env:VAR}`
+  references, never literals. `goland` is main-conversation-only — no agent is restricted to it. The
+  GitLab server defaults to `GITLAB_READ_ONLY_MODE: "true"`; flip it to `"false"` only when you want
+  issue/MR writes.
 
 ## Agent frontmatter
 

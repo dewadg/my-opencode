@@ -15,16 +15,22 @@ cp -R .opencode/commands/* ~/.config/opencode/commands/
 cp -R .opencode/skills/*   ~/.config/opencode/skills/
 ```
 
-`opencode.example.json` is a sample MCP config; merge its `mcp.servers` block into a project's
-`opencode.json` or the global `~/.config/opencode/opencode.json`, then export the env vars it
-references: `CONTEXT7_API_KEY`, `GITLAB_PAT`, `FIGMA_API_KEY`. Secrets are `{env:VAR}` references,
-never literals. The repo ships no project `opencode.json`, so MCP servers stay opt-in: nothing is
-enabled unless the global config or a project adds `mcp.servers`.
+`opencode.example.json` is a sample model, agent, MCP, and permission config; merge its `model`,
+`agents`, `mcp.servers`, and `permissions` blocks into a project's `opencode.json` or the global
+`~/.config/opencode/opencode.json`, then export the env vars it references: `CONTEXT7_API_KEY`,
+`GITLAB_PAT`, `FIGMA_API_KEY`. Secrets are `{env:VAR}` references, never literals. The repo ships no
+project `opencode.json`, so MCP servers stay opt-in: nothing is enabled unless the global config or a
+project adds `mcp.servers`.
 
 ## Agents
 
 Subagents OpenCode delegates to via the `subagent` tool. Each file is frontmatter (description,
 mode, permissions, optional model/color) plus a system prompt. The filename is the agent ID.
+
+Models are pinned centrally in the example's top-level `model` and `agents` blocks, in the native V2
+object form (`providerID`, `model`, `variant`), so no agent file carries a `model` field; an agent
+left out of `agents` runs on the session model. Only `code-reviewer` (`high`) and
+`architect-reviewer` (`max`) get a bigger variant — the rest run `low`.
 
 | Agent | Use for |
 |---|---|
@@ -168,6 +174,26 @@ the upstream `report-schema.json` and validators kept verbatim.
 MCP servers are global to a project; OpenCode has no per-agent `mcpServers` list. Restrict access
 with `permissions` using the normalized `<server>_<tool>` action when an agent should not reach a
 server. Tool names here must match the keys under `mcp.servers`.
+
+## Permissions
+
+`opencode.example.json` also carries the native V2 `permissions` array: ordered `{ action, resource,
+effect }` rules where the last match wins. `permission`, `bash`, and `agent` are the deprecated V1
+spellings — V1 objects still load, but new config uses `permissions`, `shell`, and `agents` with the
+variant joined to the model (`provider/model#variant`). The sample allows shell generally, then
+denies the commands that reach outside the workstation:
+
+| Denied                                                                 | Why                                                                         |
+|------------------------------------------------------------------------|-----------------------------------------------------------------------------|
+| `glab variable *`, `glab var *`, `glab api *variables*`                | CI/CD variables carry secrets; the alias and the raw API path reach them too |
+| `docker context use/rm/create *`, `docker --context *`, `docker -H *`, `DOCKER_HOST=*` | a context, host flag, or env var points the client at another daemon |
+| `psql *`, `docker exec/run/compose * psql*`                            | no direct database sessions, including one opened inside a container        |
+| `ssh *`, `scp *`, `sftp *`, `rsync -e *`, `rsync *--rsh*`              | no remote shells or shell-backed file transfer                              |
+
+Shell rules match the scanner-produced command string, one per extracted subcommand, so a compound
+command is checked piece by piece. A pattern ending in ` *` also matches the bare command: `psql`
+alone hits `psql *`. The container and env-prefix patterns are best effort — a shell started inside
+a container is opaque to the scanner, so `docker run -it postgres` can still reach `psql`.
 
 ## License
 

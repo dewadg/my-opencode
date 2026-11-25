@@ -1,5 +1,27 @@
 {
   "$schema": "https://opencode.ai/config.json",
+  "model": {
+    "providerID": "opencode-go",
+    "model": "deepseek-v4.1-flash",
+    "variant": "high"
+  },
+  "agents": {
+    "general": { "model": { "providerID": "opencode-go", "model": "deepseek-v4.1-flash", "variant": "low" } },
+    "explore": { "model": { "providerID": "opencode-go", "model": "deepseek-v4.1-flash", "variant": "low" } },
+    "api-documenter": { "model": { "providerID": "opencode-go", "model": "deepseek-v4.1-flash", "variant": "low" } },
+    "architect-reviewer": { "model": { "providerID": "opencode-go", "model": "deepseek-v4.1-flash", "variant": "max" } },
+    "code-diver": { "model": { "providerID": "opencode-go", "model": "deepseek-v4.1-flash", "variant": "low" } },
+    "code-reviewer": { "model": { "providerID": "opencode-go", "model": "deepseek-v4.1-flash", "variant": "high" } },
+    "compliance-auditor": { "model": { "providerID": "opencode-go", "model": "deepseek-v4.1-flash", "variant": "low" } },
+    "db-admin": { "model": { "providerID": "opencode-go", "model": "deepseek-v4.1-flash", "variant": "low" } },
+    "docker-eng": { "model": { "providerID": "opencode-go", "model": "deepseek-v4.1-flash", "variant": "low" } },
+    "golang-eng": { "model": { "providerID": "opencode-go", "model": "deepseek-v4.1-flash", "variant": "low" } },
+    "js-eng": { "model": { "providerID": "opencode-go", "model": "deepseek-v4.1-flash", "variant": "low" } },
+    "qa-eng": { "model": { "providerID": "opencode-go", "model": "deepseek-v4.1-flash", "variant": "low" } },
+    "react-eng": { "model": { "providerID": "opencode-go", "model": "deepseek-v4.1-flash", "variant": "low" } },
+    "security-auditor": { "model": { "providerID": "opencode-go", "model": "deepseek-v4.1-flash", "variant": "low" } },
+    "vue-eng": { "model": { "providerID": "opencode-go", "model": "deepseek-v4.1-flash", "variant": "low" } }
+  },
   "mcp": {
     "servers": {
       "context7": {
@@ -61,5 +83,30 @@
         }
       }
     }
-  }
+  },
+  "permissions": [
+    { "action": "shell", "resource": "*", "effect": "allow" },
+
+    { "action": "shell", "resource": "glab variable *", "effect": "deny" },
+    { "action": "shell", "resource": "glab var *", "effect": "deny" },
+    { "action": "shell", "resource": "glab api *variables*", "effect": "deny" },
+
+    { "action": "shell", "resource": "docker context use *", "effect": "deny" },
+    { "action": "shell", "resource": "docker context rm *", "effect": "deny" },
+    { "action": "shell", "resource": "docker context create *", "effect": "deny" },
+    { "action": "shell", "resource": "docker --context *", "effect": "deny" },
+    { "action": "shell", "resource": "docker -H *", "effect": "deny" },
+    { "action": "shell", "resource": "DOCKER_HOST=*", "effect": "deny" },
+
+    { "action": "shell", "resource": "psql *", "effect": "deny" },
+    { "action": "shell", "resource": "docker exec * psql*", "effect": "deny" },
+    { "action": "shell", "resource": "docker run * psql*", "effect": "deny" },
+    { "action": "shell", "resource": "docker compose * psql*", "effect": "deny" },
+
+    { "action": "shell", "resource": "ssh *", "effect": "deny" },
+    { "action": "shell", "resource": "scp *", "effect": "deny" },
+    { "action": "shell", "resource": "sftp *", "effect": "deny" },
+    { "action": "shell", "resource": "rsync -e *", "effect": "deny" },
+    { "action": "shell", "resource": "rsync *--rsh*", "effect": "deny" }
+  ]
 }
