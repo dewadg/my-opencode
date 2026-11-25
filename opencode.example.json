@@ -64,11 +64,27 @@
   },
   "permissions": [
     { "action": "shell", "resource": "*", "effect": "allow" },
+
     { "action": "shell", "resource": "glab variable *", "effect": "deny" },
+    { "action": "shell", "resource": "glab var *", "effect": "deny" },
+    { "action": "shell", "resource": "glab api *variables*", "effect": "deny" },
+
     { "action": "shell", "resource": "docker context use *", "effect": "deny" },
     { "action": "shell", "resource": "docker context rm *", "effect": "deny" },
     { "action": "shell", "resource": "docker context create *", "effect": "deny" },
+    { "action": "shell", "resource": "docker --context *", "effect": "deny" },
+    { "action": "shell", "resource": "docker -H *", "effect": "deny" },
+    { "action": "shell", "resource": "DOCKER_HOST=*", "effect": "deny" },
+
     { "action": "shell", "resource": "psql *", "effect": "deny" },
-    { "action": "shell", "resource": "ssh *", "effect": "deny" }
+    { "action": "shell", "resource": "docker exec * psql*", "effect": "deny" },
+    { "action": "shell", "resource": "docker run * psql*", "effect": "deny" },
+    { "action": "shell", "resource": "docker compose * psql*", "effect": "deny" },
+
+    { "action": "shell", "resource": "ssh *", "effect": "deny" },
+    { "action": "shell", "resource": "scp *", "effect": "deny" },
+    { "action": "shell", "resource": "sftp *", "effect": "deny" },
+    { "action": "shell", "resource": "rsync -e *", "effect": "deny" },
+    { "action": "shell", "resource": "rsync *--rsh*", "effect": "deny" }
   ]
 }

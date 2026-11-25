@@ -173,20 +173,22 @@ server. Tool names here must match the keys under `mcp.servers`.
 ## Permissions
 
 `opencode.example.json` also carries the native V2 `permissions` array: ordered `{ action, resource,
-effect }` rules where the last match wins. `permission`/`bash` are the deprecated V1 spellings — V1
-`permission` objects still load, but new config should use `permissions`/`shell`. The sample allows
-shell generally and denies the commands that reach outside the workstation:
+effect }` rules where the last match wins. `permission`, `bash`, and `agent` are the deprecated V1
+spellings — V1 objects still load, but new config uses `permissions`, `shell`, and `agents` with the
+variant joined to the model (`provider/model#variant`). The sample allows shell generally, then
+denies the commands that reach outside the workstation:
 
-| Denied                           | Why                                                   |
-|----------------------------------|-------------------------------------------------------|
-| `glab variable *`                | GitLab CI/CD variables carry secrets                  |
-| `docker context use/rm/create *` | a context can point the Docker client at another daemon |
-| `psql *`                         | no direct database sessions                           |
-| `ssh *`                          | no remote shells                                      |
+| Denied                                                                 | Why                                                                         |
+|------------------------------------------------------------------------|-----------------------------------------------------------------------------|
+| `glab variable *`, `glab var *`, `glab api *variables*`                | CI/CD variables carry secrets; the alias and the raw API path reach them too |
+| `docker context use/rm/create *`, `docker --context *`, `docker -H *`, `DOCKER_HOST=*` | a context, host flag, or env var points the client at another daemon |
+| `psql *`, `docker exec/run/compose * psql*`                            | no direct database sessions, including one opened inside a container        |
+| `ssh *`, `scp *`, `sftp *`, `rsync -e *`, `rsync *--rsh*`              | no remote shells or shell-backed file transfer                              |
 
 Shell rules match the scanner-produced command string, one per extracted subcommand, so a compound
 command is checked piece by piece. A pattern ending in ` *` also matches the bare command: `psql`
-alone hits `psql *`.
+alone hits `psql *`. The container and env-prefix patterns are best effort — a shell started inside
+a container is opaque to the scanner, so `docker run -it postgres` can still reach `psql`.
 
 ## License
 
