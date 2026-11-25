@@ -15,11 +15,12 @@ cp -R .opencode/commands/* ~/.config/opencode/commands/
 cp -R .opencode/skills/*   ~/.config/opencode/skills/
 ```
 
-`opencode.example.json` is a sample MCP config; merge its `mcp.servers` block into a project's
-`opencode.json` or the global `~/.config/opencode/opencode.json`, then export the env vars it
-references: `CONTEXT7_API_KEY`, `GITLAB_PAT`, `FIGMA_API_KEY`. Secrets are `{env:VAR}` references,
-never literals. The repo ships no project `opencode.json`, so MCP servers stay opt-in: nothing is
-enabled unless the global config or a project adds `mcp.servers`.
+`opencode.example.json` is a sample MCP and permission config; merge its `mcp.servers` and
+`permissions` blocks into a project's `opencode.json` or the global
+`~/.config/opencode/opencode.json`, then export the env vars it references: `CONTEXT7_API_KEY`,
+`GITLAB_PAT`, `FIGMA_API_KEY`. Secrets are `{env:VAR}` references, never literals. The repo ships no
+project `opencode.json`, so MCP servers stay opt-in: nothing is enabled unless the global config or a
+project adds `mcp.servers`.
 
 ## Agents
 
@@ -168,6 +169,24 @@ the upstream `report-schema.json` and validators kept verbatim.
 MCP servers are global to a project; OpenCode has no per-agent `mcpServers` list. Restrict access
 with `permissions` using the normalized `<server>_<tool>` action when an agent should not reach a
 server. Tool names here must match the keys under `mcp.servers`.
+
+## Permissions
+
+`opencode.example.json` also carries the native V2 `permissions` array: ordered `{ action, resource,
+effect }` rules where the last match wins. `permission`/`bash` are the deprecated V1 spellings — V1
+`permission` objects still load, but new config should use `permissions`/`shell`. The sample allows
+shell generally and denies the commands that reach outside the workstation:
+
+| Denied                           | Why                                                   |
+|----------------------------------|-------------------------------------------------------|
+| `glab variable *`                | GitLab CI/CD variables carry secrets                  |
+| `docker context use/rm/create *` | a context can point the Docker client at another daemon |
+| `psql *`                         | no direct database sessions                           |
+| `ssh *`                          | no remote shells                                      |
+
+Shell rules match the scanner-produced command string, one per extracted subcommand, so a compound
+command is checked piece by piece. A pattern ending in ` *` also matches the bare command: `psql`
+alone hits `psql *`.
 
 ## License
 

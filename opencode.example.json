@@ -61,5 +61,14 @@
         }
       }
     }
-  }
+  },
+  "permissions": [
+    { "action": "shell", "resource": "*", "effect": "allow" },
+    { "action": "shell", "resource": "glab variable *", "effect": "deny" },
+    { "action": "shell", "resource": "docker context use *", "effect": "deny" },
+    { "action": "shell", "resource": "docker context rm *", "effect": "deny" },
+    { "action": "shell", "resource": "docker context create *", "effect": "deny" },
+    { "action": "shell", "resource": "psql *", "effect": "deny" },
+    { "action": "shell", "resource": "ssh *", "effect": "deny" }
+  ]
 }
