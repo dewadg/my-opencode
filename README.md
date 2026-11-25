@@ -15,8 +15,8 @@ cp -R .opencode/commands/* ~/.config/opencode/commands/
 cp -R .opencode/skills/*   ~/.config/opencode/skills/
 ```
 
-`opencode.example.json` is a sample MCP and permission config; merge its `mcp.servers` and
-`permissions` blocks into a project's `opencode.json` or the global
+`opencode.example.json` is a sample model, agent, MCP, and permission config; merge its `model`,
+`agents`, `mcp.servers`, and `permissions` blocks into a project's `opencode.json` or the global
 `~/.config/opencode/opencode.json`, then export the env vars it references: `CONTEXT7_API_KEY`,
 `GITLAB_PAT`, `FIGMA_API_KEY`. Secrets are `{env:VAR}` references, never literals. The repo ships no
 project `opencode.json`, so MCP servers stay opt-in: nothing is enabled unless the global config or a
@@ -26,6 +26,11 @@ project adds `mcp.servers`.
 
 Subagents OpenCode delegates to via the `subagent` tool. Each file is frontmatter (description,
 mode, permissions, optional model/color) plus a system prompt. The filename is the agent ID.
+
+Models are pinned centrally in the example's top-level `model` and `agents` blocks, in the native V2
+object form (`providerID`, `model`, `variant`), so no agent file carries a `model` field; an agent
+left out of `agents` runs on the session model. Only `code-reviewer` (`high`) and
+`architect-reviewer` (`max`) get a bigger variant — the rest run `low`.
 
 | Agent | Use for |
 |---|---|
