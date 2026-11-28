@@ -11,6 +11,18 @@ description: template-resources — implementation journal
 Ship the shared HTML board templates and their MCP resources, so the authoring guides can render
 them. · status: shipped
 
+## Execution log
+
+| Node | Agent | Start | End | Minutes |
+|---|---|---|---|---|
+| 1 | js-eng | 2026-11-21 09:12:04 WIB (+0700) | 2026-11-21 09:58:37 WIB (+0700) | 47 |
+| 2 | golang-eng | 2026-11-21 10:04:19 WIB (+0700) | 2026-11-21 11:26:02 WIB (+0700) | 82 |
+| 3 | api-documenter | 2026-11-21 11:30:41 WIB (+0700) | 2026-11-21 12:07:26 WIB (+0700) | 37 |
+| 4 | golang-eng | 2026-11-21 12:10:33 WIB (+0700) | 2026-11-21 12:41:58 WIB (+0700) | 31 |
+| 5 | code-reviewer | 2026-11-21 12:44:12 WIB (+0700) | 2026-11-21 13:22:47 WIB (+0700) | 39 |
+| 6 | qa-eng | 2026-11-21 12:44:12 WIB (+0700) | 2026-11-21 13:40:05 WIB (+0700) | 56 |
+| Total | — | 2026-11-21 09:12:04 WIB (+0700) | 2026-11-21 13:40:05 WIB (+0700) | 292 |
+
 ## Decisions
 
 | # | Decision | Rejected | Why | Effect | Source |

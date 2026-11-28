@@ -355,13 +355,21 @@ apply:
        work; a failure writes `(failed: reason)`. A gate's durable record is the summary on the
        task line, never a path to its evidence.
     8. Invalidation: a changed file reopens every gate node downstream of it.
+    9. Time every node execution. Before handing a node to its agent, run and print
+       `date '+%Y-%m-%d %H:%M:%S %Z (%z)'` as `node <id> start: <output>`; when its tasks are
+       marked, run it again as `node <id> end: <output>`. Journal both in the `## Execution log`
+       table with the node id, its agent and the minutes spent - end minus start, whole minutes,
+       rounded to the nearest. A fix-round resume is another execution: its own row, same node id.
+       When every node is done, print `total: <minutes>` and journal a `Total` row: the sum of
+       every dispatch's minutes, with the earliest start and the latest end in its timestamp cells.
 
     Use the `impl-journal` skill to record every decision the plan did not make, as it is made.
     The applying orchestrator is the only writer, and a node's agent reports a decision in its
     result rather than editing the file. The journal is `journal.md` in the change directory,
     committed with the change; it is not an artifact, so `openspec status`, `validate` and the
     archive task gate ignore it, and `apply.tracks` stays `tasks.md`. A gate verdict is not a
-    journal entry: its durable record is the marker or summary on the task line.
+    journal entry: its durable record is the marker or summary on the task line. The execution log
+    from step 9 lives there too, one row per node dispatch, in the table the skill defines.
 
     Pause on blockers or material ambiguity. Do not invent a task to satisfy a
     dependency, and do not start a blocked node because it looks independent. Project

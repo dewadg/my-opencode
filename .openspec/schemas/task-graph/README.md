@@ -3,7 +3,8 @@
 An OpenSpec workflow schema that replaces the flat task checklist with an explicit work graph.
 `specs` is unchanged from `spec-driven`; `design` carries the project's design rules;
 `proposal.md` is dropped; `tasks.md` is the graph, `graph.md` is its one-shot snapshot, and
-`journal.md` is the apply-time decision log, owned by the `impl-journal` skill.
+`journal.md` is the apply-time decision log and node execution log, owned by the `impl-journal`
+skill.
 
 Execution runs in three stages. **Build** writes the code and its tests and only compiles the
 touched packages, so builds stay parallel instead of serializing on a test database. **Verify**
@@ -288,14 +289,23 @@ status and each command's exit code (`verify-go.md`), a QA node reports scenario
 
 ## Journal
 
-Apply-time decisions live at `openspec/changes/<change>/journal.md`, relative to the change. It is
-committed and archived with the change, unlike `evidence/`, which is scratch and never committed.
+Apply-time decisions live at `openspec/changes/<change>/journal.md`, relative to the change. The
+same file carries the execution log. It is committed and archived with the change, unlike
+`evidence/`, which is scratch and never committed.
 
 It is not an artifact: OpenSpec does not generate it, list it or gate on it, so `openspec status`,
 `validate` and the archive task gate ignore it, and `apply.tracks` stays `tasks.md`.
 
 `design.md` holds the decisions made before apply; the journal holds the ones apply forces. A gate
 verdict is not a journal entry — its durable record is the marker or summary on the task line.
+
+Every dispatch of a node is timed. The orchestrator prints
+`date '+%Y-%m-%d %H:%M:%S %Z (%z)'` when the dispatch starts and again when its tasks are marked,
+and journals both lines with the node id, its agent and the minutes spent in `## Execution log` —
+one row per dispatch, a fix-round resume included. When every node is done, it prints
+`total: <minutes>` and appends a `Total` row: the sum of every dispatch's minutes, with the earliest
+start and the latest end. The `impl-journal` skill owns the table; the schema only requires the
+timing.
 
 The `impl-journal` skill owns the format, the ids and the one-writer rule; this schema only names
 that skill in its apply instruction.

@@ -2,16 +2,16 @@
 name: impl-journal
 description: >
   Keep one implementation journal per run — the durable record of the decisions the plan did not
-  make, plus what shipped. Use for "journal this run", "start the implementation journal", "record
-  the decisions we made", "where is the decision log". Not for generic notes (note-write), not for
-  searching notes (note-search), not for review or QA findings (defect-report), not for design
-  docs (design-write).
+  make, the time each execution took, plus what shipped. Use for "journal this run", "start the
+  implementation journal", "record the decisions we made", "where is the decision log". Not for
+  generic notes (note-write), not for searching notes (note-search), not for review or QA findings
+  (defect-report), not for design docs (design-write).
 ---
 
 An implementation journal is one file per run, written by one writer, holding the durable record of
-decisions the plan did not make and of what shipped. The plan and the design say what is supposed
-to happen; the journal says what actually happened when execution met something the plan had left
-open, in the order it happened and with the evidence that it did.
+decisions the plan did not make, of the time each execution took, and of what shipped. The plan and
+the design say what is supposed to happen; the journal says what actually happened when execution
+met something the plan had left open, in the order it happened and with the evidence that it did.
 
 ## When a run journals
 
@@ -55,6 +55,25 @@ holds the decisions made before apply; this file holds the apply-time ones. A ga
 an entry — its durable record is the marker or summary on the task line — though a decision that
 rests on a verdict states the finding itself, never a path to it.
 
+## Execution log
+
+A `task-graph` apply also journals time: every dispatch of a node gets one row in `## Execution
+log`, holding the node id, its agent, the start and end timestamps, and the minutes spent.
+
+- Timestamps are the literal output of `date '+%Y-%m-%d %H:%M:%S %Z (%z)'`, printed when the
+  dispatch starts and again when its tasks are marked.
+- Minutes are end minus start, in whole minutes, rounded to the nearest; anything under half a
+  minute is `0`.
+- A fix-round resume is a new dispatch: its own row, same node id. Parallel dispatches each keep
+  their own row.
+- When every node is done, append a `Total` row and print `total: <minutes>`. Its `Minutes` cell is
+  the sum of every dispatch's minutes; its timestamp cells hold the earliest start and the latest
+  end.
+- The log is not a decision: it carries no `D` id and never replaces the marker on the task line.
+
+A `code` run has no execution log — its unit is the change unit, recorded in `Applies`. The table
+is append-only, like the rest of the file.
+
 ## Ids
 
 - `D<n>` — a decision, in report order across the run.
@@ -97,6 +116,11 @@ description: <change> — implementation journal
 | # | Change unit | Date | Source | Result | Commits |
 |---|---|---|---|---|---|
 | 1 | <unit> | <date> | `ses_…` / `node <id>` | shipped | `abc1234` |
+## Execution log
+| Node | Agent | Start | End | Minutes |
+|---|---|---|---|---|
+| 1 | golang-eng | 2026-11-21 09:12:04 WIB (+0700) | 2026-11-21 09:58:37 WIB (+0700) | 47 |
+| Total | — | 2026-11-21 09:12:04 WIB (+0700) | 2026-11-21 09:58:37 WIB (+0700) | 47 |
 ## Decisions
 | # | Decision | Rejected | Why | Effect | Source |
 |---|---|---|---|---|---|
