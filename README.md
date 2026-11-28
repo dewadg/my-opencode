@@ -110,7 +110,7 @@ step.
 |---|---|
 | `note-write` | Persist knowledge as a dated, tagged markdown note |
 | `note-search` | Retrieve past notes by project, topic, ticket, or date |
-| `impl-journal` | One implementation journal per run — decisions, status, findings, outcome; shared by the `code` skill and a `task-graph` apply |
+| `impl-journal` | One implementation journal per run — decisions, status, findings, outcome, execution times; shared by the `code` skill and a `task-graph` apply |
 
 Notes live in `.notes/` (or wherever the project's `AGENTS.md` says), named
 `{YYYY}-{MM}-{DD}[-{TICKET}]-slug.md`, with `tags` / `projects` / `created` / `updated` / `related` /
