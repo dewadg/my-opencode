@@ -360,6 +360,8 @@ apply:
        marked, run it again as `node <id> end: <output>`. Journal both in the `## Execution log`
        table with the node id, its agent and the minutes spent - end minus start, whole minutes,
        rounded to the nearest. A fix-round resume is another execution: its own row, same node id.
+       When every node is done, print `total: <minutes>` and journal a `Total` row: the sum of
+       every dispatch's minutes, with the earliest start and the latest end in its timestamp cells.
 
     Use the `impl-journal` skill to record every decision the plan did not make, as it is made.
     The applying orchestrator is the only writer, and a node's agent reports a decision in its

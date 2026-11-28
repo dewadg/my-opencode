@@ -66,6 +66,9 @@ log`, holding the node id, its agent, the start and end timestamps, and the minu
   minute is `0`.
 - A fix-round resume is a new dispatch: its own row, same node id. Parallel dispatches each keep
   their own row.
+- When every node is done, append a `Total` row and print `total: <minutes>`. Its `Minutes` cell is
+  the sum of every dispatch's minutes; its timestamp cells hold the earliest start and the latest
+  end.
 - The log is not a decision: it carries no `D` id and never replaces the marker on the task line.
 
 A `code` run has no execution log — its unit is the change unit, recorded in `Applies`. The table
@@ -117,6 +120,7 @@ description: <change> — implementation journal
 | Node | Agent | Start | End | Minutes |
 |---|---|---|---|---|
 | 1 | golang-eng | 2026-11-21 09:12:04 WIB (+0700) | 2026-11-21 09:58:37 WIB (+0700) | 47 |
+| Total | — | 2026-11-21 09:12:04 WIB (+0700) | 2026-11-21 09:58:37 WIB (+0700) | 47 |
 ## Decisions
 | # | Decision | Rejected | Why | Effect | Source |
 |---|---|---|---|---|---|

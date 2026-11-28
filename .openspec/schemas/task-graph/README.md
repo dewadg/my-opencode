@@ -302,8 +302,10 @@ verdict is not a journal entry — its durable record is the marker or summary o
 Every dispatch of a node is timed. The orchestrator prints
 `date '+%Y-%m-%d %H:%M:%S %Z (%z)'` when the dispatch starts and again when its tasks are marked,
 and journals both lines with the node id, its agent and the minutes spent in `## Execution log` —
-one row per dispatch, a fix-round resume included. The `impl-journal` skill owns the table; the
-schema only requires the timing.
+one row per dispatch, a fix-round resume included. When every node is done, it prints
+`total: <minutes>` and appends a `Total` row: the sum of every dispatch's minutes, with the earliest
+start and the latest end. The `impl-journal` skill owns the table; the schema only requires the
+timing.
 
 The `impl-journal` skill owns the format, the ids and the one-writer rule; this schema only names
 that skill in its apply instruction.
